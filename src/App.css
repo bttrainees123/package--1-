@@ -1,0 +1,208 @@
+.spinner_overlay{
+  background-color: #000;
+  position: fixed;
+  width: 100%;
+  height: 100vh;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 10;
+  opacity: 0.6;
+  overflow-y: hidden;
+}
+.spinner-box {
+  position: fixed;
+  left: 50%;
+  top: 50%;  
+  z-index: 12; 
+}
+
+
+.loading-icon {
+  display: flex;
+  border-radius: 50%;
+  width: 60px;
+  height: 60px;
+  text-align: center;
+  position: relative;
+  margin: auto;
+}
+
+.error {
+  color: red;
+  font-size: 14px;
+  
+}
+
+.loading {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+}
+
+.loading img{
+  width: 150px;
+  height: auto;
+  background-color: #ffffff;
+  padding: 10px 21px;
+  border-radius: 10px;
+}
+.pagination .MuiTablePagination-spacer, .pagination p{
+  margin-bottom: 0 !important;
+}
+
+#logo img{
+  max-width: 46%;
+}
+.text-start{
+  cursor: pointer;
+}
+.react-tel-input .form-control {
+  border: 1px solid #ddd !important;
+  width: 100% !important;
+  padding: 11px 14px 11px 60px !important;
+}
+
+.react-tel-input .country-list .search-box {
+  min-width: 92% !important;
+}
+.selectpanding {
+  background-color: #FFE1E1;
+  border-color: #FFE1E1;
+  font-size: 14px;
+  font-weight: 700;
+  color: #F10202;
+  border-radius: 6px;
+  padding: 2px 0px 2px 3px;
+}
+
+.tableborderless > :not(caption) > * > * {
+ border: 0;
+}
+
+.modalstyle{
+  width: 100%;
+    border-radius: 30px;
+}
+
+
+.contentdivbox figure {
+  height: 424px;
+}
+
+.contentdivbox figure img{
+  width: 100%;
+  height: 100%;
+  cursor: pointer;
+}
+
+.contentdivbox_contentnew figure{
+  height: inherit !important;
+}
+
+.contentdivbox_contentnew figure.smdoc{
+  height: 130px;
+}
+.userHistoryLink{
+  text-decoration: underline;
+  color: #014178;
+  font-weight: 600;
+}
+.newbtnread:hover{
+  border: 1px solid #f10202;
+  border-radius: 6px;
+  background: #f10202;
+  color: #fff;
+}
+.newbtndarkblue:hover{
+  border: 1px solid #014178;
+  border-radius: 6px;
+  background: #014178;
+  color: #fff;
+}
+.newodr-menu{
+  background-color: white !important;
+}
+.ReactTags__tagInputField{
+  border: none;
+    border-bottom: 1px solid black;
+    width: 100%;
+    font-size: 16px;
+    padding: 9px;
+}
+.ReactTags__suggestions{
+  width: 100%;
+  background-color: #ffffff;
+  padding: 10px;
+}
+.ReactTags__remove {
+  background: none;
+  border: none; 
+  cursor: pointer; 
+  font-size: 18px;
+  font-weight: bold;
+  color: black; 
+}
+.ReactTags__remove svg{
+  fill: #000;
+}
+.ReactTags__tag {
+  border-radius: 20px;
+  padding: 1px 11px;
+  display: inline-block;
+  margin: 3px;
+  font-family: "Work Sans", sans-serif;
+  background-color: rgb(0 0 0 / 19%);
+  font-size: 14px;
+}
+.reviewSubmit{
+  padding: 7px 27px !important;
+  font-size: 13px !important;
+}
+.reviewLike{
+  font-size: 13px;
+  font-weight: bold;
+  color: green !important;
+  cursor: pointer;
+}
+.reviewdisLike{
+  font-size: 13px;
+  font-weight: bold;
+  color: red !important;
+  cursor: pointer;
+}
+.startDate{
+  white-space: nowrap;
+  font-size: 14px;
+}
+.badge-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 8px 0;
+}
+
+.menu-badge {
+  background: #0b9295;
+  color: #fff;
+  font-size: 13px;
+  padding: 6px 12px;
+  border-radius: 20px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  white-space: nowrap;
+  transition: transform 0.2s ease-in-out;
+}
+
+.menu-badge:hover {
+  transform: scale(1.05);
+  cursor: pointer;
+}
+.trak{
+  border-radius: 6px;
+    border: 1px solid #137eda;
+    background: #f1f9ff;
+    padding: 15px;
+}
+

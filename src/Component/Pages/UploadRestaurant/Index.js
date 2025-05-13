@@ -1,0 +1,839 @@
+import React, { useState } from "react";
+import { Link } from "react-router-dom";
+import {
+  ApiLoder,
+  ErrorMessage,
+  SuccessMessage,
+} from "../../../helpers/common";
+import { PostImage, PostImageMultiple } from "../../../utils/apiCall";
+import { callAPI } from "../../../utils/apiUtils";
+import { apiUrls } from "../../../utils/apiUrls";
+
+export default function Index() {
+  const [selectedRestaurantOption, setSelectedRestaurantOption] = useState("");
+  const [selectedAddressOption, setSelectedAddressOption] = useState("");
+  const [selectedMenuOption, setSelectedMenuOption] = useState("");
+  const [selectedMenuAddressOption, setSelectedMenuAddressOption] = useState("");
+  const [loader, setLoader] = useState(false);
+  const [imgArr, setImgArr] = useState([])
+  const [parseData, setParseData] = useState([
+    "Te WW\n| COASTLINE\nlevers aN oye alfle- *\nBO on tmnt os . Ameren a a sakes,\nSt ns SEINE ETT GAee eNSTE RTE ES TENT ETE TT TTT TESTE NETL TE eee ERNE sy\nCoastline Burgers Redmond\n16244 Cleveland Street\nRedmond, WA 98052\nOD ARH NA. Sit NOs ARIS OL EY NN TR RRND GIN SS SEE GANT TEN SEN Dts ONE Ny APE NE Meets hey dentin Ot <tr ARID HNN AA SN ND ARO ORD ose RY saath Aes A <n ee aan\nSteone MM BOR. Geen SeINe SARE eT p= A HE RIND. AOD Selle DO NOD WNRES, sanale SaaS Liane Wht GNIS <atah Wer me Aoi URE SNE SR, abe ate SORE OEE HEY SEE EERE Seth eA UR sere ont OEY Sh cE\nHEP age ete att ee MR nde TONNES epaet inlay IEP HUTA NA DANI sin: ON St tank: ON Ral Atle 4 aaa nde Mal. ead ang ME POOR NR. SRiie aNNe Shiin IRE Senko: Rin Shy Ae sme eee Sem i: Om\nserver: Knocka P\nCheck #30 nike\nOrdered: 07/03/25 3:37-PH\n| The Spicy BBQ $10.49\nFried Chicken $1.00\nsubtotal 11.49\nTax $1.18\nTin $1.00",
+    "12:36 Bam ONOGV41\n Order #0A3D1 Help\nOpens at 10:00 AM\nCapriotti's Sandwich Shop\nOrder completed  Aug 18, 2021 at 12:29 PM\nYour order\n1 Homemade Turkey\nTip: $3.95\nf= Total: $29.34\n& Your delivery by Omar\nWhat delivery people see\nA Welimit which info they can >\nview about you\n<  SB"
+  ])
+  const [menuValue, setMenuValue] = useState({
+    parsedData: "",
+    nameStartWith: "",
+    nameEndWith: "",
+    namestartFrom: "",
+    nameendFrom: "",
+    namelineNumber: "",
+    descriptionStartWith: "",
+    descriptionEndWith: "",
+    descriptionstartFrom: "",
+    descriptionendFrom: "",
+    descriptionnamelineNumber: "",
+  });
+  const [value, setValue] = useState({
+    parsedData: "",
+    nameStartWith: "",
+    nameEndWith: "",
+    namestartFrom: "",
+    nameendFrom: "",
+    namelineNumber: "",
+    addressStartWith: "",
+    addressEndWith: "",
+    addressstartFrom: "",
+    addressendFrom: "",
+    addresslineNumber: "",
+  });
+
+  const [input, seInput] = useState({
+    restaurantAddress: "",
+    restaurantName: ""
+  });
+
+  const [menuArr, setMenuArr] = useState([])
+
+  const [menuInput, setMenuInput] = useState([{
+    itemName: "",
+    description: ""
+  }])
+
+  const handleMultipleMenu = async (e) => {
+    const files = Array.from(e.target.files)
+    imgArr.push(...files)
+    setImgArr(imgArr)
+    const path = await PostImageMultiple(imgArr);
+    if (path?.length > 0) {
+      handleMultiplePath(path)
+    }
+    e.target.value = null;
+  }
+
+  const ParseMenuData = async (index) => {
+    try {
+      setLoader(true);
+      let data = {
+        parsedData: parseData[index], // parsedData always required
+      };
+
+      if (selectedMenuOption) {
+        if (selectedMenuOption === "startWith") {
+          data.nameStartWith = menuValue.nameStartWith;
+        } else if (selectedMenuOption === "endWith") {
+          data.nameEndWith = menuValue.nameEndWith;
+        } else if (selectedMenuOption === "between") {
+          data.namestartFrom = menuValue.namestartFrom;
+          data.nameendFrom = menuValue.nameendFrom;
+        } else if (selectedMenuOption === "chef") {
+          data.namelineNumber = menuValue.namelineNumber;
+        }
+      }
+
+      if (selectedMenuAddressOption) {
+        if (selectedMenuAddressOption === "startWith") {
+          data.addressStartWith = menuValue.addressStartWith;
+        } else if (selectedMenuAddressOption === "endWith") {
+          data.addressEndWith = menuValue.addressEndWith;
+        } else if (selectedMenuAddressOption === "between") {
+          data.addressstartFrom = menuValue.addressstartFrom;
+          data.addressendFrom = menuValue.addressendFrom;
+        } else if (selectedMenuAddressOption === "chef") {
+          data.addresslineNumber = menuValue.addresslineNumber;
+        }
+      }
+
+      const apiResponse = await callAPI(
+        apiUrls.menuParser,
+        {},
+        "POST",
+        data
+      );
+      console.log("apiResponse ", apiResponse);
+
+      if (apiResponse?.data?.status) {
+        let newFormValues = [...menuInput]
+        newFormValues[index].itemName = apiResponse?.data?.data.menuName
+        newFormValues[index].description = apiResponse?.data?.data.menuDescription
+        setMenuInput([...menuInput, newFormValues])
+        // menuInput.push(newFormValues)
+        // setMenuInput(menuInput)
+        console.log("Menu Item", menuInput);
+
+        // setMenuInput((val) => {
+        //   return { ...val, itemName: apiResponse?.data?.data.menuName, description: apiResponse?.data?.data.menuDescription };
+        // });
+        // let newArr = [...menuArr]
+        // newArr[index] = menuInput
+        // menuArr.push(newArr)
+        // setMenuArr(menuArr)
+        // console.log("MenuArr ", menuArr);
+        
+      } else {
+        ErrorMessage(apiResponse?.data?.message);
+        setMenuInput((val) => {
+          return { ...val, itemName: "", description: "" };
+        });
+      }
+      setLoader(false);
+    } catch (error) {
+      setMenuInput((val) => {
+        return { ...val, itemName: "", description: "" };
+      });
+      setLoader(false);
+      ErrorMessage(error?.message);
+    }
+  };
+
+  const handleMultiplePath = async (path) => {
+    try {
+      setLoader(true);
+      const apiResponse = await callAPI(apiUrls.reciptMenuParserAdmin, {}, "POST", { images: path })
+      console.log("apiResponse ", apiResponse)
+      if (apiResponse?.data?.status) {
+        parseData.push(...apiResponse?.data?.data)
+        setParseData(parseData);
+        console.log("ParseData ", parseData);
+        SuccessMessage(apiResponse?.data?.message);
+      } else {
+        ErrorMessage(apiResponse?.data?.message);
+      } setLoader(false);
+    } catch (error) {
+      setLoader(false);
+      ErrorMessage(error?.message);
+    }
+  }
+
+  const UploadImage = async (e, allowedFileTypes) => {
+    let file = e?.target?.files[0];
+    if (
+      allowedFileTypes.includes(file?.type) ||
+      allowedFileTypes.includes(file?.name?.split(".").reverse()[0])
+    ) {
+      const path = await PostImage(file);
+      if (path?.length > 0) {
+        Serviceadd(path[0]);
+      }
+      e.target.value = null;
+    } else {
+      ErrorMessage("Invalid file Format");
+
+      e.target.value = null;
+      return false;
+    }
+  };
+
+  const Serviceadd = async (image) => {
+    try {
+      setLoader(true);
+      const apiResponse = await callAPI(
+        apiUrls.reciptRestaurantMenu,
+        {},
+        "POST",
+        { image: image }
+      );
+      if (apiResponse?.data?.status) {
+        setValue((val) => {
+          return { ...val, parsedData: apiResponse?.data?.data };
+        });
+        SuccessMessage(apiResponse?.data?.message);
+      } else {
+        ErrorMessage(apiResponse?.data?.message);
+      }
+      setLoader(false);
+    } catch (error) {
+      setLoader(false);
+      ErrorMessage(error?.message);
+    }
+  };
+
+
+  const ParseName = async () => {
+    const hasValue = Object.values(value).some((val) => val.trim() !== "");
+    if (!hasValue) return;
+
+    try {
+      setLoader(true);
+      let data = {
+        parsedData: value.parsedData, // parsedData always required
+      };
+
+      // Handle restaurant options
+      if (selectedRestaurantOption) {
+        if (selectedRestaurantOption === "startWith") {
+          data.nameStartWith = value.nameStartWith;
+        } else if (selectedRestaurantOption === "endWith") {
+          data.nameEndWith = value.nameEndWith;
+        } else if (selectedRestaurantOption === "between") {
+          data.namestartFrom = value.namestartFrom;
+          data.nameendFrom = value.nameendFrom;
+        } else if (selectedRestaurantOption === "chef") {
+          data.namelineNumber = value.namelineNumber;
+        }
+      }
+
+      if (selectedAddressOption) {
+        if (selectedAddressOption === "startWith") {
+          data.addressStartWith = value.addressStartWith;
+        } else if (selectedAddressOption === "endWith") {
+          data.addressEndWith = value.addressEndWith;
+        } else if (selectedAddressOption === "between") {
+          data.addressstartFrom = value.addressstartFrom;
+          data.addressendFrom = value.addressendFrom;
+        } else if (selectedAddressOption === "chef") {
+          data.addresslineNumber = value.addresslineNumber;
+        }
+      }
+
+      const apiResponse = await callAPI(
+        apiUrls.restaurantParser,
+        {},
+        "POST",
+        data
+      );
+      if (apiResponse?.data?.status) {
+        seInput((val) => {
+          return { ...val, restaurantAddress: apiResponse?.data?.data.restaurantAddress, restaurantName: apiResponse?.data?.data.restaurantName };
+        });
+      } else {
+        ErrorMessage(apiResponse?.data?.message);
+        seInput((val) => {
+          return { ...val, restaurantAddress: "", restaurantName: "" };
+        });
+      }
+      setLoader(false);
+    } catch (error) {
+      seInput((val) => {
+        return { ...val, restaurantAddress: "", restaurantName: "" };
+      });
+      setLoader(false);
+      ErrorMessage(error?.message);
+    }
+  };
+
+  const handleChange = (i, e) => {
+    let newFormValues = [...formValues]
+    newFormValues[i][e.target.name] = e.target.value
+    setFormValues(newFormValues)
+  }
+
+  const labels = {
+    startWith: "Start With",
+    endWith: "End With",
+    between: "Between",
+    chef: "Line Number",
+  };
+
+  const renderInputField = (selectedOption, type) => {
+    if (!selectedOption) return null;
+
+    // Determine key prefix based on type (name or address)
+    const prefix = type === "name" ? "name" : "address";
+
+    if (selectedOption === "chef") {
+      const fieldName = prefix + "lineNumber";
+
+
+
+      return (
+        <div className="form-group">
+          <h6>{labels[selectedOption]}</h6>
+          <input
+            type="text"
+            className="form-control"
+            placeholder="Start From"
+            value={value[fieldName]}
+            onChange={(e) =>
+              setValue((prev) => ({ ...prev, [fieldName]: e.target.value }))
+            }
+          />
+        </div>
+      );
+    } else if (selectedOption === "between") {
+      const startField = prefix + "startFrom";
+      const endField = prefix + "endFrom";
+
+
+      return (
+        <>
+          <div className="form-group mb-3">
+            <h6>Start From</h6>
+            <input
+              type="text"
+              className="form-control"
+              placeholder="Start From"
+              value={value[startField]}
+              onChange={(e) =>
+                setValue((prev) => ({ ...prev, [startField]: e.target.value }))
+              }
+            />
+          </div>
+          <div className="form-group">
+            <h6>End From</h6>
+            <input
+              type="text"
+              className="form-control"
+              placeholder="End From"
+              value={value[endField]}
+              onChange={(e) =>
+                setValue((prev) => ({ ...prev, [endField]: e.target.value }))
+              }
+            />
+          </div>
+        </>
+      );
+    } else {
+      const fieldName =
+        prefix +
+        selectedOption.charAt(0).toUpperCase() +
+        selectedOption.slice(1);
+
+
+
+      return (
+        <div className="form-group">
+          <h6>{labels[selectedOption]}</h6>
+          <input
+            type="text"
+            className="form-control"
+            placeholder={`Enter ${labels[selectedOption]}`}
+            value={value[fieldName]}
+            onChange={(e) =>
+              setValue((prev) => ({ ...prev, [fieldName]: e.target.value }))
+            }
+          />
+        </div>
+      );
+    }
+  };
+  const renderInputFieldMenu = (selectedOption, type) => {
+    if (!selectedOption) return null;
+
+    // Determine key prefix based on type (name or address)
+    const prefix = type === "name" ? "name" : "address";
+
+    if (selectedOption === "chef") {
+      const fieldName = prefix + "lineNumber";
+
+
+
+      return (
+        <div className="form-group">
+          <h6>{labels[selectedOption]}</h6>
+          <input
+            type="text"
+            className="form-control"
+            placeholder="Start From"
+            value={menuValue[fieldName]}
+            onChange={(e) =>
+              setMenuValue((prev) => ({ ...prev, [fieldName]: e.target.value }))
+            }
+          />
+        </div>
+      );
+    } else if (selectedOption === "between") {
+      const startField = prefix + "startFrom";
+      const endField = prefix + "endFrom";
+
+
+      return (
+        <>
+          <div className="form-group mb-3">
+            <h6>Start From</h6>
+            <input
+              type="text"
+              className="form-control"
+              placeholder="Start From"
+              value={menuValue[startField]}
+              onChange={(e) =>
+                setMenuValue((prev) => ({ ...prev, [startField]: e.target.value }))
+              }
+            />
+          </div>
+          <div className="form-group">
+            <h6>End From</h6>
+            <input
+              type="text"
+              className="form-control"
+              placeholder="End From"
+              value={menuValue[endField]}
+              onChange={(e) =>
+                setMenuValue((prev) => ({ ...prev, [endField]: e.target.value }))
+              }
+            />
+          </div>
+        </>
+      );
+    } else {
+      const fieldName =
+        prefix +
+        selectedOption.charAt(0).toUpperCase() +
+        selectedOption.slice(1);
+
+
+
+      return (
+        <div className="form-group">
+          <h6>{labels[selectedOption]}</h6>
+          <input
+            type="text"
+            className="form-control"
+            placeholder={`Enter ${labels[selectedOption]}`}
+            value={menuValue[fieldName]}
+            onChange={(e) =>
+              setMenuValue((prev) => ({ ...prev, [fieldName]: e.target.value }))
+            }
+          />
+        </div>
+      );
+    }
+  };
+
+  // console.log(value);
+  return (
+    <div id="page-container" className="page_contclass">
+      {/* Top Title Section */}
+      <div className="top-title-sec d-flex align-items-center justify-content-between mb-30">
+        <h1 className="heading24 mb-0">Upload Restaurant</h1>
+        <nav aria-label="breadcrumb">
+          <ol className="breadcrumb mb-0 custbread">
+            <li className="breadcrumb-item">
+              <Link to="/admin/dashborad">Dashboard</Link>
+            </li>
+            <li className="breadcrumb-item active" aria-current="page">
+              Upload Restaurant
+            </li>
+          </ol>
+        </nav>
+      </div>
+      {loader && <ApiLoder />}
+      {/* Upload Section */}
+      <div className="inner-main-content">
+        <div className="resturant-upload-top mb-30">
+          <div className="upload-btn-sec d-flex justify-content-end gap-3 align-items-center">
+            {/* Upload Buttons */}
+            <div className="upload-btn-resturant">
+              <button className="creatbtn">
+                <svg
+                  width={24}
+                  height={24}
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    d="M11 16V7.85L8.4 10.45L7 9L12 4L17 9L15.6 10.45L13 7.85V16H11ZM6 20C5.45 20 4.97917 19.8042 4.5875 19.4125C4.19583 19.0208 4 18.55 4 18V15H6V18H18V15H20V18C20 18.55 19.8042 19.0208 19.4125 19.4125C19.0208 19.8042 18.55 20 18 20H6Z"
+                    fill="#fff"
+                  />
+                </svg>
+                Upload Restaurant
+              </button>
+              <input
+                type="file"
+                name="restaurantFile"
+                accept="image/png,image/jpg,image/jpeg"
+                onChange={(e) => {
+                  UploadImage(e, ["image/png", "image/jpg", "image/jpeg"]);
+                }}
+              />
+            </div>
+            <div className="upload-btn-resturant">
+              <button className="creatbtn">
+                <svg
+                  width={24}
+                  height={24}
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    d="M11 16V7.85L8.4 10.45L7 9L12 4L17 9L15.6 10.45L13 7.85V16H11ZM6 20C5.45 20 4.97917 19.8042 4.5875 19.4125C4.19583 19.0208 4 18.55 4 18V15H6V18H18V15H20V18C20 18.55 19.8042 19.0208 19.4125 19.4125C19.0208 19.8042 18.55 20 18 20H6Z"
+                    fill="#fff"
+                  />
+                </svg>
+                Upload Menu
+              </button>
+              <input type="file"
+                name="menuFile"
+                accept="image/png,image/jpg,image/jpeg"
+                multiple
+                onChange={(e) => {
+                  handleMultipleMenu(e)
+                }}
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* Form Section */}
+        <div className="upload-resturant-sec mb-30" id="upload-resturantid">
+          <div className="container-fluid">
+            <div className="row">
+              {/* Left Form */}
+              <div className="col-lg-8">
+                <div className="tablecard h-100">
+                  <div className="tableheader d-flex align-items-center justify-content-between boderbtn">
+                    <h2 className="mb-0">Restaurant Detail</h2>
+                  </div>
+                  <div className="contentdivbox">
+                    <div className="row align-items-center">
+                      {/* Restaurant Name */}
+                      <div className="col-lg-5 mb-3">
+                        <div className="form-group">
+                          <h6>Restaurant Name</h6>
+                          <input type="text" className="form-control" value={input?.restaurantName} />
+                        </div>
+                      </div>
+                      {/* Restaurant Radio Buttons */}
+                      <div className="col-lg-7 mt-2">
+                        <div className="d-flex gap-2 resturant-radio-btn">
+                          {Object.entries(labels).map(([key, label]) => (
+                            <div
+                              key={key}
+                              className="d-flex gap-2 align-items-center"
+                            >
+                              <label>{label}</label>
+                              <input
+                                className="form-check-input"
+                                type="radio"
+                                name="restaurantOptions"
+                                value={key}
+                                checked={selectedRestaurantOption === key}
+                                onChange={(e) =>
+                                  setSelectedRestaurantOption(e.target.value)
+                                }
+                              />
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                      {/* Dynamic Input */}
+                      <div className="col-lg-12 mb-3">
+                        {renderInputField(selectedRestaurantOption, "name")}
+                      </div>
+                    </div>
+
+                    <div className="row align-items-center">
+                      {/* Address */}
+                      <div className="col-lg-5 mb-3">
+                        <div className="form-group">
+                          <h6>Address</h6>
+                          <input type="text" className="form-control" value={input?.restaurantAddress} />
+                        </div>
+                      </div>
+                      {/* Address Radio Buttons */}
+                      <div className="col-lg-7 mt-2">
+                        <div className="d-flex gap-2 resturant-radio-btn">
+                          {Object.entries(labels).map(([key, label]) => (
+                            <div
+                              key={key}
+                              className="d-flex gap-2 align-items-center"
+                            >
+                              <label>{label}</label>
+                              <input
+                                className="form-check-input"
+                                type="radio"
+                                name="addressOptions"
+                                value={key}
+                                checked={selectedAddressOption === key}
+                                onChange={(e) =>
+                                  setSelectedAddressOption(e.target.value)
+                                }
+                              />
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                      {/* Dynamic Input */}
+                      <div className="col-lg-12 mb-3">
+                        {renderInputField(selectedAddressOption, "address")}
+                      </div>
+                      <div className="btndiv d-flex align-items-center gap-3 justify-content-start mt-30 ps-3">
+                        <Link to="#" className="btndarkblue" onClick={ParseName}>
+                          Review
+                        </Link>
+
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+              </div>
+
+
+              {/* Right Card */}
+              <div className="col-lg-4">
+                <div className="tablecard mb-30 h-100">
+                  <div className="tableheader boderbtn">
+                    <h2 className="mb-0">Receipt data</h2>
+                  </div>
+                  <div className="contentdivbox">
+                    {value?.parsedData && (
+                      <div className="split_text">
+                        {value.parsedData.split("\n").map((line, index) => (
+                          <p key={index}>{line}</p>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Menu Section */}
+        {parseData.map((line, index) => (
+          <div key={index} className="upload-menu-sec" id="upload-menu-id">
+            <div className="container-fluid">
+              <div className="row">
+                <div className="col-lg-8">
+                  <div className="tablecard h-100">
+                    <div className="tableheader d-flex align-items-center justify-content-between boderbtn">
+                      <h2 className="mb-0">Menu Item Detail</h2>
+                    </div>
+                    <div className="contentdivbox">
+                      <div className="row align-items-center">
+                        <div className="col-lg-5 mb-3">
+                          <div className="form-group">
+                            <h6>Item Name</h6>
+                            <input type="text" className="form-control" value={menuInput[index].itemName} />
+                          </div>
+                        </div>
+                        <div className="col-lg-7 mt-2">
+                          <div className="d-flex gap-3 resturant-radio-btn">
+                            {Object.entries(labels).map(([key, label]) => (
+                              <div key={key} className="d-flex gap-2 align-items-center">
+                                <label htmlFor="itemRadio1">{label}</label>
+                                <input
+                                  className="form-check-input"
+                                  type="radio"
+                                  name="itemOptions"
+                                  id="itemRadio1"
+                                  defaultValue="owner"
+                                  aria-label="startwith"
+                                  value={key}
+                                  checked={selectedMenuOption === key}
+                                  onChange={(e) =>
+                                    setSelectedMenuOption(e.target.value)
+                                  }
+                                />
+                              </div>))}
+                            {/* <div className="d-flex gap-2 align-items-center">
+                              <label htmlFor="itemRadio2">End with</label>
+                              <input
+                                className="form-check-input"
+                                type="radio"
+                                name="itemOptions"
+                                id="itemRadio2"
+                                defaultValue="manager"
+                                aria-label="endwith"
+                              />
+                            </div>
+                            <div className="d-flex gap-2 align-items-center">
+                              <label htmlFor="">Between</label>
+                              <input
+                                className="form-check-input"
+                                type="radio"
+                                name="itemOptions"
+                                id="itemRadio3"
+                                defaultValue="between"
+                                aria-label="between"
+                              />
+                            </div>
+                            <div className="d-flex gap-2 align-items-center">
+                              <label htmlFor="itemRadio3">Line Number</label>
+                              <input
+                                className="form-check-input"
+                                type="radio"
+                                name="itemOptions"
+                                id="itemRadio4"
+                                defaultValue="chef"
+                                aria-label="linenumber"
+                              />
+                            </div> */}
+                          </div>
+                        </div>
+                        <div className="col-lg-12 mb-3">
+                          {/* <div id="dynamicInputContainerItem" /> */}
+                          {renderInputFieldMenu(selectedMenuOption, "name", index)}
+                        </div>
+                      </div>
+                      <div className="row align-items-center">
+                        <div className="col-lg-5 mb-3">
+                          <div className="form-group">
+                            <h6>Description</h6>
+                            <input type="text" className="form-control" value={menuInput[index].description} />
+                          </div>
+                        </div>
+                        <div className="col-lg-7 mt-2">
+                          <div className="d-flex gap-3 resturant-radio-btn">
+                            {Object.entries(labels).map(([key, label]) => (
+                              <div key={key} className="d-flex gap-2 align-items-center">
+                                <label htmlFor="descriptionRadio1">
+                                  {label}
+                                </label>
+                                <input
+                                  className="form-check-input"
+                                  type="radio"
+                                  name="descriptionOptions"
+                                  id="descriptionRadio1"
+                                  defaultValue="owner"
+                                  aria-label="startwith"
+                                  value={key}
+                                  checked={selectedMenuAddressOption === key}
+                                  onChange={(e) =>
+                                    setSelectedMenuAddressOption(e.target.value)
+                                  }
+                                />
+                              </div>))}
+                            {/* <div className="d-flex gap-2 align-items-center">
+                              <label htmlFor="descriptionRadio2">End with</label>
+                              <input
+                                className="form-check-input"
+                                type="radio"
+                                name="descriptionOptions"
+                                id="descriptionRadio2"
+                                defaultValue="manager"
+                                aria-label="endwith"
+                              />
+                            </div>
+                            <div className="d-flex gap-2 align-items-center">
+                              <label htmlFor="">Between</label>
+                              <input
+                                className="form-check-input"
+                                type="radio"
+                                name="descriptionOptions"
+                                id="descriptionRadio3"
+                                defaultValue="between"
+                                aria-label="between"
+                              />
+                            </div>
+                            <div className="d-flex gap-2 align-items-center">
+                              <label htmlFor="descriptionRadio3">
+                                Line Number
+                              </label>
+                              <input
+                                className="form-check-input"
+                                type="radio"
+                                name="descriptionOptions"
+                                id="descriptionRadio4"
+                                defaultValue="chef"
+                                aria-label="linenumber"
+                              />
+                            </div> */}
+                          </div>
+                        </div>
+                        <div className="col-lg-12 mb-3">
+                          {/* <div id="dynamicInputContainerDescription" /> */}
+                          {renderInputFieldMenu(selectedMenuAddressOption, "address")}
+                        </div>
+                        <div className="btndiv d-flex align-items-center gap-3 justify-content-start mt-30 ps-3">
+                          <Link to="#" className="btndarkblue" onClick={(e) => ParseMenuData(index)}>
+                            Review
+                          </Link>
+
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div className="col-lg-4">
+                  <div className="tablecard mb-30 h-100">
+                    <div className="tableheader boderbtn">
+                      <h2 className="mb-0">Menu Item data</h2>
+                    </div>
+                    <div className="contentdivbox ">
+                      {/* <p>
+                        '1:50 38 &amp; ao WM SGUC 4 029%', 'LIL REDS TAKEOUT AND
+                        C', 'FOLLOWING', 'SEATTLE,', 'Oxtail Gravy $0.00', 'Rice
+                        &amp; Peas (Lg) $8.31', 'Subtotal $8.31', 'Taxes 10.35%
+                        $0.83', 'Tip $1.32', 'Discount -$0.32', 'Total $ 10 14',
+                        'US DEBIT $10.14', '5994', 'Cashier: Ari', 'VISA',
+                        'February 06, 2025 +- 1:38 pm', 'Payment ID:
+                        7PMAQZKPR7R8G', 'Order ID: V29H4RW4Y4TEY', 'Order
+                        Employee: Ari', 'Show Details', '&lt; @ 0'
+                      </p> */}
+
+                      <p style={{ whiteSpace: "pre-line" }}>{line}</p>
+
+                    </div>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+          </div>
+        ))}
+        <div className="btndiv d-flex align-items-center gap-3 justify-content-start mt-30 ps-3">
+          <Link to="#" className="btndarkblue" onClick={ParseMenuData}>
+            Submit
+          </Link>
+          <Link to="#" className="btndarkblue-outline">
+            Clear{" "}
+          </Link>
+        </div>
+      </div>
+    </div>
+  );
+}
