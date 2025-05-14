@@ -17,10 +17,10 @@ export default function Index() {
   const [loader, setLoader] = useState(false);
   const [imgArr, setImgArr] = useState([])
   const [parseData, setParseData] = useState([
-    "Te WW\n| COASTLINE\nlevers aN oye alfle- *\nBO on tmnt os . Ameren a a sakes,\nSt ns SEINE ETT GAee eNSTE RTE ES TENT ETE TT TTT TESTE NETL TE eee ERNE sy\nCoastline Burgers Redmond\n16244 Cleveland Street\nRedmond, WA 98052\nOD ARH NA. Sit NOs ARIS OL EY NN TR RRND GIN SS SEE GANT TEN SEN Dts ONE Ny APE NE Meets hey dentin Ot <tr ARID HNN AA SN ND ARO ORD ose RY saath Aes A <n ee aan\nSteone MM BOR. Geen SeINe SARE eT p= A HE RIND. AOD Selle DO NOD WNRES, sanale SaaS Liane Wht GNIS <atah Wer me Aoi URE SNE SR, abe ate SORE OEE HEY SEE EERE Seth eA UR sere ont OEY Sh cE\nHEP age ete att ee MR nde TONNES epaet inlay IEP HUTA NA DANI sin: ON St tank: ON Ral Atle 4 aaa nde Mal. ead ang ME POOR NR. SRiie aNNe Shiin IRE Senko: Rin Shy Ae sme eee Sem i: Om\nserver: Knocka P\nCheck #30 nike\nOrdered: 07/03/25 3:37-PH\n| The Spicy BBQ $10.49\nFried Chicken $1.00\nsubtotal 11.49\nTax $1.18\nTin $1.00",
-    "12:36 Bam ONOGV41\n Order #0A3D1 Help\nOpens at 10:00 AM\nCapriotti's Sandwich Shop\nOrder completed  Aug 18, 2021 at 12:29 PM\nYour order\n1 Homemade Turkey\nTip: $3.95\nf= Total: $29.34\n& Your delivery by Omar\nWhat delivery people see\nA Welimit which info they can >\nview about you\n<  SB"
+    // "Te WW\n| COASTLINE\nlevers aN oye alfle- *\nBO on tmnt os . Ameren a a sakes,\nSt ns SEINE ETT GAee eNSTE RTE ES TENT ETE TT TTT TESTE NETL TE eee ERNE sy\nCoastline Burgers Redmond\n16244 Cleveland Street\nRedmond, WA 98052\nOD ARH NA. Sit NOs ARIS OL EY NN TR RRND GIN SS SEE GANT TEN SEN Dts ONE Ny APE NE Meets hey dentin Ot <tr ARID HNN AA SN ND ARO ORD ose RY saath Aes A <n ee aan\nSteone MM BOR. Geen SeINe SARE eT p= A HE RIND. AOD Selle DO NOD WNRES, sanale SaaS Liane Wht GNIS <atah Wer me Aoi URE SNE SR, abe ate SORE OEE HEY SEE EERE Seth eA UR sere ont OEY Sh cE\nHEP age ete att ee MR nde TONNES epaet inlay IEP HUTA NA DANI sin: ON St tank: ON Ral Atle 4 aaa nde Mal. ead ang ME POOR NR. SRiie aNNe Shiin IRE Senko: Rin Shy Ae sme eee Sem i: Om\nserver: Knocka P\nCheck #30 nike\nOrdered: 07/03/25 3:37-PH\n| The Spicy BBQ $10.49\nFried Chicken $1.00\nsubtotal 11.49\nTax $1.18\nTin $1.00",
+    // "12:36 Bam ONOGV41\n Order #0A3D1 Help\nOpens at 10:00 AM\nCapriotti's Sandwich Shop\nOrder completed  Aug 18, 2021 at 12:29 PM\nYour order\n1 Homemade Turkey\nTip: $3.95\nf= Total: $29.34\n& Your delivery by Omar\nWhat delivery people see\nA Welimit which info they can >\nview about you\n<  SB"
   ])
-  const [menuValue, setMenuValue] = useState({
+  const [menuValue, setMenuValue] = useState([{
     parsedData: "",
     nameStartWith: "",
     nameEndWith: "",
@@ -32,7 +32,7 @@ export default function Index() {
     descriptionstartFrom: "",
     descriptionendFrom: "",
     descriptionnamelineNumber: "",
-  });
+  }]);
   const [value, setValue] = useState({
     parsedData: "",
     nameStartWith: "",
@@ -52,107 +52,96 @@ export default function Index() {
     restaurantName: ""
   });
 
-  const [menuArr, setMenuArr] = useState([])
-
-  const [menuInput, setMenuInput] = useState([{
-    itemName: "",
-    description: ""
-  }])
+  const [menuInput, setMenuInput] = useState([
+    {
+      itemName: "",
+      description: ""
+    },
+    // {
+    //   itemName: "",
+    //   description: ""
+    // },
+  ])
 
   const handleMultipleMenu = async (e) => {
-    const files = Array.from(e.target.files)
-    imgArr.push(...files)
-    setImgArr(imgArr)
-    const path = await PostImageMultiple(imgArr);
-    if (path?.length > 0) {
-      handleMultiplePath(path)
-    }
+    const files = Array.from(e.target.files);
+    const updatedImgArr = [...imgArr, ...files];
+    setImgArr(updatedImgArr);
+    const path = await PostImageMultiple(updatedImgArr);
+    if (path?.length > 0) handleMultiplePath(path);
     e.target.value = null;
-  }
+  };
 
   const ParseMenuData = async (index) => {
+    const hasValue = Object.values(menuValue[index]).some((val) => val.trim() !== "");
+    if (!hasValue) return;
     try {
       setLoader(true);
-      let data = {
-        parsedData: parseData[index], // parsedData always required
-      };
+      const data = { parsedData: parseData[index] };
 
       if (selectedMenuOption) {
-        if (selectedMenuOption === "startWith") {
-          data.nameStartWith = menuValue.nameStartWith;
-        } else if (selectedMenuOption === "endWith") {
-          data.nameEndWith = menuValue.nameEndWith;
-        } else if (selectedMenuOption === "between") {
-          data.namestartFrom = menuValue.namestartFrom;
-          data.nameendFrom = menuValue.nameendFrom;
-        } else if (selectedMenuOption === "chef") {
-          data.namelineNumber = menuValue.namelineNumber;
-        }
+        if (selectedMenuOption === "startWith") data.nameStartWith = menuValue[index].nameStartWith;
+        else if (selectedMenuOption === "endWith") data.nameEndWith = menuValue[index].nameEndWith;
+        else if (selectedMenuOption === "between") {
+          data.namestartFrom = menuValue[index].namestartFrom;
+          data.nameendFrom = menuValue[index].nameendFrom;
+        } else if (selectedMenuOption === "chef") data.namelineNumber = menuValue[index].namelineNumber;
       }
 
       if (selectedMenuAddressOption) {
-        if (selectedMenuAddressOption === "startWith") {
-          data.addressStartWith = menuValue.addressStartWith;
-        } else if (selectedMenuAddressOption === "endWith") {
-          data.addressEndWith = menuValue.addressEndWith;
-        } else if (selectedMenuAddressOption === "between") {
-          data.addressstartFrom = menuValue.addressstartFrom;
-          data.addressendFrom = menuValue.addressendFrom;
-        } else if (selectedMenuAddressOption === "chef") {
-          data.addresslineNumber = menuValue.addresslineNumber;
-        }
+        if (selectedMenuAddressOption === "startWith") data.addressStartWith = menuValue[index].addressStartWith;
+        else if (selectedMenuAddressOption === "endWith") data.addressEndWith = menuValue[index].addressEndWith;
+        else if (selectedMenuAddressOption === "between") {
+          data.addressstartFrom = menuValue[index].addressstartFrom;
+          data.addressendFrom = menuValue[index].addressendFrom;
+        } else if (selectedMenuAddressOption === "chef") data.addresslineNumber = menuValue[index].addresslineNumber;
       }
 
-      const apiResponse = await callAPI(
-        apiUrls.menuParser,
-        {},
-        "POST",
-        data
-      );
-      console.log("apiResponse ", apiResponse);
-
+      const apiResponse = await callAPI(apiUrls.menuParser, {}, "POST", data);
       if (apiResponse?.data?.status) {
-        let newFormValues = [...menuInput]
-        newFormValues[index].itemName = apiResponse?.data?.data.menuName
-        newFormValues[index].description = apiResponse?.data?.data.menuDescription
-        setMenuInput([...menuInput, newFormValues])
-        // menuInput.push(newFormValues)
-        // setMenuInput(menuInput)
-        console.log("Menu Item", menuInput);
+        console.log("apiResponse ", apiResponse);
 
-        // setMenuInput((val) => {
-        //   return { ...val, itemName: apiResponse?.data?.data.menuName, description: apiResponse?.data?.data.menuDescription };
-        // });
-        // let newArr = [...menuArr]
-        // newArr[index] = menuInput
-        // menuArr.push(newArr)
-        // setMenuArr(menuArr)
-        // console.log("MenuArr ", menuArr);
-        
+        const updatedInputs = [...menuInput];
+        updatedInputs[index] = {
+          
+          itemName: apiResponse?.data?.data?.menuName,
+          description: apiResponse?.data?.data?.menuDescription,
+        };
+        setMenuInput(updatedInputs);
+        SuccessMessage(apiResponse?.data?.message);
       } else {
         ErrorMessage(apiResponse?.data?.message);
-        setMenuInput((val) => {
-          return { ...val, itemName: "", description: "" };
-        });
+        const resetInputs = [...menuInput];
+        resetInputs[index] = { itemName: "", description: "" };
+        setMenuInput(resetInputs);
       }
       setLoader(false);
     } catch (error) {
-      setMenuInput((val) => {
-        return { ...val, itemName: "", description: "" };
-      });
+      const resetInputs = [...menuInput];
+      resetInputs[index] = { itemName: "", description: "" };
+      setMenuInput(resetInputs);
       setLoader(false);
       ErrorMessage(error?.message);
     }
   };
 
+  const onHandleChange = (fieldName, e, index) => {
+    console.log("fieldName ", fieldName)
+    const updatedInputs = [...menuValue];
+    updatedInputs[index] = {
+      ...updatedInputs[index],
+      [fieldName]: e.target.value,
+    }; 
+    setMenuValue(updatedInputs);
+    console.log("menuValue ", menuValue);
+  }
   const handleMultiplePath = async (path) => {
     try {
       setLoader(true);
       const apiResponse = await callAPI(apiUrls.reciptMenuParserAdmin, {}, "POST", { images: path })
       console.log("apiResponse ", apiResponse)
       if (apiResponse?.data?.status) {
-        parseData.push(...apiResponse?.data?.data)
-        setParseData(parseData);
+        setParseData((prev) => [...prev, ...apiResponse?.data?.data]);
         console.log("ParseData ", parseData);
         SuccessMessage(apiResponse?.data?.message);
       } else {
@@ -271,11 +260,7 @@ export default function Index() {
     }
   };
 
-  const handleChange = (i, e) => {
-    let newFormValues = [...formValues]
-    newFormValues[i][e.target.name] = e.target.value
-    setFormValues(newFormValues)
-  }
+
 
   const labels = {
     startWith: "Start With",
@@ -366,7 +351,9 @@ export default function Index() {
       );
     }
   };
-  const renderInputFieldMenu = (selectedOption, type) => {
+  const renderInputFieldMenu = (selectedOption, type, index) => {
+    console.log("selected ", selectedOption);
+    
     if (!selectedOption) return null;
 
     // Determine key prefix based on type (name or address)
@@ -378,15 +365,16 @@ export default function Index() {
 
 
       return (
-        <div className="form-group">
+        <div id={index} className="form-group">
           <h6>{labels[selectedOption]}</h6>
           <input
             type="text"
             className="form-control"
             placeholder="Start From"
-            value={menuValue[fieldName]}
+            value={menuValue[index]?.[fieldName]}
             onChange={(e) =>
-              setMenuValue((prev) => ({ ...prev, [fieldName]: e.target.value }))
+              onHandleChange(fieldName, e, index)
+              // setMenuValue([...prev, {[fieldName]: e.target.value} ])
             }
           />
         </div>
@@ -404,9 +392,10 @@ export default function Index() {
               type="text"
               className="form-control"
               placeholder="Start From"
-              value={menuValue[startField]}
+              value={menuValue[index]?.[startField]}
               onChange={(e) =>
-                setMenuValue((prev) => ({ ...prev, [startField]: e.target.value }))
+                onHandleChange(startField, e, index)
+                // setMenuValue((prev) => ({ ...prev, [startField]: e.target.value }))
               }
             />
           </div>
@@ -416,9 +405,10 @@ export default function Index() {
               type="text"
               className="form-control"
               placeholder="End From"
-              value={menuValue[endField]}
+              value={menuValue[index]?.[endField]}
               onChange={(e) =>
-                setMenuValue((prev) => ({ ...prev, [endField]: e.target.value }))
+                onHandleChange(endField, e, index)
+                // setMenuValue((prev) => ({ ...prev, [endField]: e.target.value }))
               }
             />
           </div>
@@ -439,9 +429,10 @@ export default function Index() {
             type="text"
             className="form-control"
             placeholder={`Enter ${labels[selectedOption]}`}
-            value={menuValue[fieldName]}
+            value={menuValue[index]?.[fieldName]}
             onChange={(e) =>
-              setMenuValue((prev) => ({ ...prev, [fieldName]: e.target.value }))
+              onHandleChange(fieldName, e, index)
+              // setMenuValue((prev) => ({ ...prev, [fieldName]: e.target.value }))
             }
           />
         </div>
@@ -657,7 +648,7 @@ export default function Index() {
                         <div className="col-lg-5 mb-3">
                           <div className="form-group">
                             <h6>Item Name</h6>
-                            <input type="text" className="form-control" value={menuInput[index].itemName} />
+                            <input type="text" className="form-control" value={menuInput[index]?.itemName || ""} /> 
                           </div>
                         </div>
                         <div className="col-lg-7 mt-2">
@@ -723,7 +714,7 @@ export default function Index() {
                         <div className="col-lg-5 mb-3">
                           <div className="form-group">
                             <h6>Description</h6>
-                            <input type="text" className="form-control" value={menuInput[index].description} />
+                            <input type="text" className="form-control" value={menuInput[index]?.description || ""} />
                           </div>
                         </div>
                         <div className="col-lg-7 mt-2">
@@ -786,7 +777,7 @@ export default function Index() {
                         </div>
                         <div className="col-lg-12 mb-3">
                           {/* <div id="dynamicInputContainerDescription" /> */}
-                          {renderInputFieldMenu(selectedMenuAddressOption, "address")}
+                          {renderInputFieldMenu(selectedMenuAddressOption, "address", index)}
                         </div>
                         <div className="btndiv d-flex align-items-center gap-3 justify-content-start mt-30 ps-3">
                           <Link to="#" className="btndarkblue" onClick={(e) => ParseMenuData(index)}>
