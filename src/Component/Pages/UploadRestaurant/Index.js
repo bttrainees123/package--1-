@@ -8,31 +8,31 @@ import {
 import { PostImage, PostImageMultiple } from "../../../utils/apiCall";
 import { callAPI } from "../../../utils/apiUtils";
 import { apiUrls } from "../../../utils/apiUrls";
+import { defaultConfig } from "../../../config";
 
 export default function Index() {
   const [selectedRestaurantOption, setSelectedRestaurantOption] = useState("");
   const [selectedAddressOption, setSelectedAddressOption] = useState("");
-  const [selectedMenuOption, setSelectedMenuOption] = useState("");
-  const [selectedMenuAddressOption, setSelectedMenuAddressOption] = useState("");
+  const [selectedMenuOption, setSelectedMenuOption] = useState([])
+  const [selectedMenuAddressOption, setSelectedMenuAddressOption] = useState([]);
   const [loader, setLoader] = useState(false);
+  const [pathArr, setPathArr] = useState([])
   const [imgArr, setImgArr] = useState([])
-  const [parseData, setParseData] = useState([
-    // "Te WW\n| COASTLINE\nlevers aN oye alfle- *\nBO on tmnt os . Ameren a a sakes,\nSt ns SEINE ETT GAee eNSTE RTE ES TENT ETE TT TTT TESTE NETL TE eee ERNE sy\nCoastline Burgers Redmond\n16244 Cleveland Street\nRedmond, WA 98052\nOD ARH NA. Sit NOs ARIS OL EY NN TR RRND GIN SS SEE GANT TEN SEN Dts ONE Ny APE NE Meets hey dentin Ot <tr ARID HNN AA SN ND ARO ORD ose RY saath Aes A <n ee aan\nSteone MM BOR. Geen SeINe SARE eT p= A HE RIND. AOD Selle DO NOD WNRES, sanale SaaS Liane Wht GNIS <atah Wer me Aoi URE SNE SR, abe ate SORE OEE HEY SEE EERE Seth eA UR sere ont OEY Sh cE\nHEP age ete att ee MR nde TONNES epaet inlay IEP HUTA NA DANI sin: ON St tank: ON Ral Atle 4 aaa nde Mal. ead ang ME POOR NR. SRiie aNNe Shiin IRE Senko: Rin Shy Ae sme eee Sem i: Om\nserver: Knocka P\nCheck #30 nike\nOrdered: 07/03/25 3:37-PH\n| The Spicy BBQ $10.49\nFried Chicken $1.00\nsubtotal 11.49\nTax $1.18\nTin $1.00",
-    // "12:36 Bam ONOGV41\n Order #0A3D1 Help\nOpens at 10:00 AM\nCapriotti's Sandwich Shop\nOrder completed  Aug 18, 2021 at 12:29 PM\nYour order\n1 Homemade Turkey\nTip: $3.95\nf= Total: $29.34\n& Your delivery by Omar\nWhat delivery people see\nA Welimit which info they can >\nview about you\n<  SB"
-  ])
+  const [parseData, setParseData] = useState([])
   const [menuValue, setMenuValue] = useState([{
     parsedData: "",
-    nameStartWith: "",
-    nameEndWith: "",
-    namestartFrom: "",
-    nameendFrom: "",
-    namelineNumber: "",
-    descriptionStartWith: "",
-    descriptionEndWith: "",
-    descriptionstartFrom: "",
-    descriptionendFrom: "",
-    descriptionnamelineNumber: "",
-  }]);
+    nameStartWith: '',
+    nameEndWith: '',
+    namestartFrom: '',
+    nameendFrom: '',
+    namelineNumber: '',
+    descriptionStartWith: '',
+    descriptionEndWith: '',
+    descriptionstartFrom: '',
+    descriptionendFrom: '',
+    descriptionlineNumber: ''
+  }])
+
   const [value, setValue] = useState({
     parsedData: "",
     nameStartWith: "",
@@ -57,10 +57,6 @@ export default function Index() {
       itemName: "",
       description: ""
     },
-    // {
-    //   itemName: "",
-    //   description: ""
-    // },
   ])
 
   const handleMultipleMenu = async (e) => {
@@ -68,8 +64,18 @@ export default function Index() {
     const updatedImgArr = [...imgArr, ...files];
     setImgArr(updatedImgArr);
     const path = await PostImageMultiple(updatedImgArr);
+    pathArr.push(...path);
+    setPathArr(pathArr);
+    console.log("pathArr ", pathArr);
     if (path?.length > 0) handleMultiplePath(path);
     e.target.value = null;
+  };
+
+  const handleMenuValueChange = (index, event) => {
+    const { name, value } = event.target;
+    const updatedValues = [...menuValue];
+    updatedValues[index] = { ...updatedValues[index], [name]: value };
+    setMenuValue(updatedValues);
   };
 
   const ParseMenuData = async (index) => {
@@ -78,36 +84,35 @@ export default function Index() {
     try {
       setLoader(true);
       const data = { parsedData: parseData[index] };
-
-      if (selectedMenuOption) {
-        if (selectedMenuOption === "startWith") data.nameStartWith = menuValue[index].nameStartWith;
-        else if (selectedMenuOption === "endWith") data.nameEndWith = menuValue[index].nameEndWith;
-        else if (selectedMenuOption === "between") {
+      const menuOpt = selectedMenuOption[index];
+      if (menuOpt) {
+        if (menuOpt === "startWith") data.nameStartWith = menuValue[index].nameStartWith;
+        else if (menuOpt === "endWith") data.nameEndWith = menuValue[index].nameEndWith;
+        else if (menuOpt === "between") {
           data.namestartFrom = menuValue[index].namestartFrom;
           data.nameendFrom = menuValue[index].nameendFrom;
-        } else if (selectedMenuOption === "chef") data.namelineNumber = menuValue[index].namelineNumber;
+        } else if (menuOpt === "chef") data.namelineNumber = menuValue[index].namelineNumber;
       }
-
-      if (selectedMenuAddressOption) {
-        if (selectedMenuAddressOption === "startWith") data.addressStartWith = menuValue[index].addressStartWith;
-        else if (selectedMenuAddressOption === "endWith") data.addressEndWith = menuValue[index].addressEndWith;
-        else if (selectedMenuAddressOption === "between") {
-          data.addressstartFrom = menuValue[index].addressstartFrom;
-          data.addressendFrom = menuValue[index].addressendFrom;
-        } else if (selectedMenuAddressOption === "chef") data.addresslineNumber = menuValue[index].addresslineNumber;
+      const descriptionOpt = selectedMenuAddressOption[index];
+      if (descriptionOpt) {
+        if (descriptionOpt === "startWith") data.descriptionStartWith = menuValue[index].descriptionStartWith;
+        else if (descriptionOpt === "endWith") data.descriptionEndWith = menuValue[index].descriptionEndWith;
+        else if (descriptionOpt === "between") {
+          data.descriptionstartFrom = menuValue[index].descriptionstartFrom;
+          data.descriptionendFrom = menuValue[index].descriptionendFrom;
+        } else if (descriptionOpt === "chef") data.descriptionlineNumber = menuValue[index].descriptionlineNumber;
       }
-
       const apiResponse = await callAPI(apiUrls.menuParser, {}, "POST", data);
       if (apiResponse?.data?.status) {
         console.log("apiResponse ", apiResponse);
-
         const updatedInputs = [...menuInput];
         updatedInputs[index] = {
-          
+          ...updatedInputs[index],
           itemName: apiResponse?.data?.data?.menuName,
           description: apiResponse?.data?.data?.menuDescription,
         };
         setMenuInput(updatedInputs);
+        console.log("Menu value ", menuInput)
         SuccessMessage(apiResponse?.data?.message);
       } else {
         ErrorMessage(apiResponse?.data?.message);
@@ -125,16 +130,6 @@ export default function Index() {
     }
   };
 
-  const onHandleChange = (fieldName, e, index) => {
-    console.log("fieldName ", fieldName)
-    const updatedInputs = [...menuValue];
-    updatedInputs[index] = {
-      ...updatedInputs[index],
-      [fieldName]: e.target.value,
-    }; 
-    setMenuValue(updatedInputs);
-    console.log("menuValue ", menuValue);
-  }
   const handleMultiplePath = async (path) => {
     try {
       setLoader(true);
@@ -143,6 +138,7 @@ export default function Index() {
       if (apiResponse?.data?.status) {
         setParseData((prev) => [...prev, ...apiResponse?.data?.data]);
         console.log("ParseData ", parseData);
+        setImgArr([])
         SuccessMessage(apiResponse?.data?.message);
       } else {
         ErrorMessage(apiResponse?.data?.message);
@@ -196,18 +192,14 @@ export default function Index() {
     }
   };
 
-
   const ParseName = async () => {
     const hasValue = Object.values(value).some((val) => val.trim() !== "");
     if (!hasValue) return;
-
     try {
       setLoader(true);
       let data = {
-        parsedData: value.parsedData, // parsedData always required
+        parsedData: value.parsedData,
       };
-
-      // Handle restaurant options
       if (selectedRestaurantOption) {
         if (selectedRestaurantOption === "startWith") {
           data.nameStartWith = value.nameStartWith;
@@ -260,8 +252,6 @@ export default function Index() {
     }
   };
 
-
-
   const labels = {
     startWith: "Start With",
     endWith: "End With",
@@ -271,15 +261,10 @@ export default function Index() {
 
   const renderInputField = (selectedOption, type) => {
     if (!selectedOption) return null;
-
     // Determine key prefix based on type (name or address)
     const prefix = type === "name" ? "name" : "address";
-
     if (selectedOption === "chef") {
       const fieldName = prefix + "lineNumber";
-
-
-
       return (
         <div className="form-group">
           <h6>{labels[selectedOption]}</h6>
@@ -297,8 +282,6 @@ export default function Index() {
     } else if (selectedOption === "between") {
       const startField = prefix + "startFrom";
       const endField = prefix + "endFrom";
-
-
       return (
         <>
           <div className="form-group mb-3">
@@ -332,9 +315,6 @@ export default function Index() {
         prefix +
         selectedOption.charAt(0).toUpperCase() +
         selectedOption.slice(1);
-
-
-
       return (
         <div className="form-group">
           <h6>{labels[selectedOption]}</h6>
@@ -351,93 +331,154 @@ export default function Index() {
       );
     }
   };
+
   const renderInputFieldMenu = (selectedOption, type, index) => {
-    console.log("selected ", selectedOption);
-    
-    if (!selectedOption) return null;
-
-    // Determine key prefix based on type (name or address)
-    const prefix = type === "name" ? "name" : "address";
-
-    if (selectedOption === "chef") {
-      const fieldName = prefix + "lineNumber";
-
-
-
-      return (
-        <div id={index} className="form-group">
-          <h6>{labels[selectedOption]}</h6>
-          <input
-            type="text"
-            className="form-control"
-            placeholder="Start From"
-            value={menuValue[index]?.[fieldName]}
-            onChange={(e) =>
-              onHandleChange(fieldName, e, index)
-              // setMenuValue([...prev, {[fieldName]: e.target.value} ])
-            }
-          />
-        </div>
-      );
-    } else if (selectedOption === "between") {
-      const startField = prefix + "startFrom";
-      const endField = prefix + "endFrom";
-
-
-      return (
-        <>
-          <div className="form-group mb-3">
-            <h6>Start From</h6>
-            <input
-              type="text"
-              className="form-control"
-              placeholder="Start From"
-              value={menuValue[index]?.[startField]}
-              onChange={(e) =>
-                onHandleChange(startField, e, index)
-                // setMenuValue((prev) => ({ ...prev, [startField]: e.target.value }))
-              }
-            />
-          </div>
+    const value = menuValue[index] || {};
+    if (type === "name") {
+      if (selectedOption === "startWith") {
+        return (
           <div className="form-group">
-            <h6>End From</h6>
+            <h6>Start With</h6>
             <input
-              type="text"
               className="form-control"
-              placeholder="End From"
-              value={menuValue[index]?.[endField]}
-              onChange={(e) =>
-                onHandleChange(endField, e, index)
-                // setMenuValue((prev) => ({ ...prev, [endField]: e.target.value }))
-              }
+              type="text"
+              name="nameStartWith"
+              value={value.nameStartWith || ""}
+              onChange={(e) => handleMenuValueChange(index, e)}
+              placeholder="Enter start with"
             />
           </div>
-        </>
-      );
-    } else {
-      const fieldName =
-        prefix +
-        selectedOption.charAt(0).toUpperCase() +
-        selectedOption.slice(1);
+        );
+      } else if (selectedOption === "endWith") {
+        return (
+          <div className="form-group">
+            <h6>End With</h6>
+            <input
+              className="form-control"
+              type="text"
+              name="nameEndWith"
+              value={value.nameEndWith || ""}
+              onChange={(e) => handleMenuValueChange(index, e)}
+              placeholder="Enter end with"
+            />
+          </div>
+        );
+      } else if (selectedOption === "between") {
+        return (
+          <>
+            <div className="form-group">
+              <h6>start From</h6>
+              <input
+                className="form-control mb-1"
+                type="text"
+                name="namestartFrom"
+                value={value.namestartFrom || ""}
+                onChange={(e) => handleMenuValueChange(index, e)}
+                placeholder="Enter start from"
+              />
+            </div>
+            <div className="form-group">
+              <h6>End From</h6>
+              <input
+                className="form-control"
+                type="text"
+                name="nameendFrom"
+                value={value.nameendFrom || ""}
+                onChange={(e) => handleMenuValueChange(index, e)}
+                placeholder="Enter end from"
+              />
+            </div>
+          </>
+        );
+      } else if (selectedOption === "chef") {
+        return (
+          <div className="form-group">
+            <h6>Line Number</h6>
+            <input
+              className="form-control"
+              type="number"
 
-
-
-      return (
-        <div className="form-group">
-          <h6>{labels[selectedOption]}</h6>
-          <input
-            type="text"
-            className="form-control"
-            placeholder={`Enter ${labels[selectedOption]}`}
-            value={menuValue[index]?.[fieldName]}
-            onChange={(e) =>
-              onHandleChange(fieldName, e, index)
-              // setMenuValue((prev) => ({ ...prev, [fieldName]: e.target.value }))
-            }
-          />
-        </div>
-      );
+              name="namelineNumber"
+              value={value.namelineNumber || ""}
+              onChange={(e) => handleMenuValueChange(index, e)}
+              placeholder="Line number"
+            />
+          </div>
+        );
+      }
+    } else if (type === "address") {
+      if (selectedOption === "startWith") {
+        return (
+          <div className="form-group">
+            <h6>Start With</h6>
+            <input
+              className="form-control"
+              type="text"
+              name="descriptionStartWith"
+              value={value.descriptionStartWith || ""}
+              onChange={(e) => handleMenuValueChange(index, e)}
+              placeholder="Start With"
+            />
+          </div>
+        );
+      } else if (selectedOption === "endWith") {
+        return (
+          <div className="form-group">
+            <h6>End With</h6>
+            <input
+              className="form-control"
+              type="text"
+              name="descriptionEndWith"
+              value={value.descriptionEndWith || ""}
+              onChange={(e) => handleMenuValueChange(index, e)}
+              placeholder="Enter end with"
+            />
+          </div>
+        );
+      } else if (selectedOption === "between") {
+        return (
+          <>
+            <div className="form-group">
+              <h6>Start From</h6>
+              <input
+                className="form-control mb-1"
+                type="text"
+                name="descriptionstartFrom"
+                value={value.descriptionstartFrom || ""}
+                onChange={(e) => handleMenuValueChange(index, e)}
+                placeholder="Enter start from"
+              />
+            </div>
+            <div className="form-group">
+              <h6>End From</h6>
+              <input
+                className="form-control"
+                type="text"
+                name="descriptionendFrom"
+                value={value.descriptionendFrom || ""}
+                onChange={(e) => handleMenuValueChange(index, e)}
+                placeholder="Enter end from"
+              />
+            </div>
+          </>
+        )
+      } else if (selectedOption === "chef") {
+        return (
+          <div className="form-group">
+            <h6>Line Number</h6>
+            <input
+              className="form-control"
+              type="number"
+              name="descriptionlineNumber"
+              value={value.descriptionlineNumber || ""}
+              onChange={(e) => handleMenuValueChange(index, e)}
+              placeholder="Line number"
+            />
+          </div>
+        );
+      }
     }
+    return null;
   };
 
   // console.log(value);
@@ -603,12 +644,10 @@ export default function Index() {
                         <Link to="#" className="btndarkblue" onClick={ParseName}>
                           Review
                         </Link>
-
                       </div>
                     </div>
                   </div>
                 </div>
-
               </div>
 
 
@@ -648,7 +687,7 @@ export default function Index() {
                         <div className="col-lg-5 mb-3">
                           <div className="form-group">
                             <h6>Item Name</h6>
-                            <input type="text" className="form-control" value={menuInput[index]?.itemName || ""} /> 
+                            <input type="text" className="form-control" value={menuInput[index]?.itemName || ""} />
                           </div>
                         </div>
                         <div className="col-lg-7 mt-2">
@@ -659,56 +698,21 @@ export default function Index() {
                                 <input
                                   className="form-check-input"
                                   type="radio"
-                                  name="itemOptions"
-                                  id="itemRadio1"
-                                  defaultValue="owner"
-                                  aria-label="startwith"
+                                  name={`menuOption_${index}`}
                                   value={key}
-                                  checked={selectedMenuOption === key}
-                                  onChange={(e) =>
-                                    setSelectedMenuOption(e.target.value)
-                                  }
-                                />
+                                  checked={selectedMenuOption[index] === key}
+                                  onChange={(e) => {
+                                    const updated = [...selectedMenuOption];
+                                    updated[index] = e.target.value;
+                                    setSelectedMenuOption(updated);
+                                  }}
+                                />{" "}
                               </div>))}
-                            {/* <div className="d-flex gap-2 align-items-center">
-                              <label htmlFor="itemRadio2">End with</label>
-                              <input
-                                className="form-check-input"
-                                type="radio"
-                                name="itemOptions"
-                                id="itemRadio2"
-                                defaultValue="manager"
-                                aria-label="endwith"
-                              />
-                            </div>
-                            <div className="d-flex gap-2 align-items-center">
-                              <label htmlFor="">Between</label>
-                              <input
-                                className="form-check-input"
-                                type="radio"
-                                name="itemOptions"
-                                id="itemRadio3"
-                                defaultValue="between"
-                                aria-label="between"
-                              />
-                            </div>
-                            <div className="d-flex gap-2 align-items-center">
-                              <label htmlFor="itemRadio3">Line Number</label>
-                              <input
-                                className="form-check-input"
-                                type="radio"
-                                name="itemOptions"
-                                id="itemRadio4"
-                                defaultValue="chef"
-                                aria-label="linenumber"
-                              />
-                            </div> */}
                           </div>
                         </div>
                         <div className="col-lg-12 mb-3">
                           {/* <div id="dynamicInputContainerItem" /> */}
-                          {renderInputFieldMenu(selectedMenuOption, "name", index)}
-                        </div>
+                          {renderInputFieldMenu(selectedMenuOption[index], "name", index)}                        </div>
                       </div>
                       <div className="row align-items-center">
                         <div className="col-lg-5 mb-3">
@@ -727,63 +731,25 @@ export default function Index() {
                                 <input
                                   className="form-check-input"
                                   type="radio"
-                                  name="descriptionOptions"
-                                  id="descriptionRadio1"
-                                  defaultValue="owner"
-                                  aria-label="startwith"
+                                  name={`menuAddressOption_${index}`}
                                   value={key}
-                                  checked={selectedMenuAddressOption === key}
-                                  onChange={(e) =>
-                                    setSelectedMenuAddressOption(e.target.value)
-                                  }
-                                />
+                                  checked={selectedMenuAddressOption[index] === key}
+                                  onChange={(e) => {
+                                    const updated = [...selectedMenuAddressOption];
+                                    updated[index] = e.target.value;
+                                    setSelectedMenuAddressOption(updated);
+                                  }}
+                                />{" "}
                               </div>))}
-                            {/* <div className="d-flex gap-2 align-items-center">
-                              <label htmlFor="descriptionRadio2">End with</label>
-                              <input
-                                className="form-check-input"
-                                type="radio"
-                                name="descriptionOptions"
-                                id="descriptionRadio2"
-                                defaultValue="manager"
-                                aria-label="endwith"
-                              />
-                            </div>
-                            <div className="d-flex gap-2 align-items-center">
-                              <label htmlFor="">Between</label>
-                              <input
-                                className="form-check-input"
-                                type="radio"
-                                name="descriptionOptions"
-                                id="descriptionRadio3"
-                                defaultValue="between"
-                                aria-label="between"
-                              />
-                            </div>
-                            <div className="d-flex gap-2 align-items-center">
-                              <label htmlFor="descriptionRadio3">
-                                Line Number
-                              </label>
-                              <input
-                                className="form-check-input"
-                                type="radio"
-                                name="descriptionOptions"
-                                id="descriptionRadio4"
-                                defaultValue="chef"
-                                aria-label="linenumber"
-                              />
-                            </div> */}
                           </div>
                         </div>
                         <div className="col-lg-12 mb-3">
                           {/* <div id="dynamicInputContainerDescription" /> */}
-                          {renderInputFieldMenu(selectedMenuAddressOption, "address", index)}
-                        </div>
+                          {renderInputFieldMenu(selectedMenuAddressOption[index], "address", index)}                        </div>
                         <div className="btndiv d-flex align-items-center gap-3 justify-content-start mt-30 ps-3">
                           <Link to="#" className="btndarkblue" onClick={(e) => ParseMenuData(index)}>
                             Review
                           </Link>
-
                         </div>
                       </div>
                     </div>
@@ -795,23 +761,11 @@ export default function Index() {
                       <h2 className="mb-0">Menu Item data</h2>
                     </div>
                     <div className="contentdivbox ">
-                      {/* <p>
-                        '1:50 38 &amp; ao WM SGUC 4 029%', 'LIL REDS TAKEOUT AND
-                        C', 'FOLLOWING', 'SEATTLE,', 'Oxtail Gravy $0.00', 'Rice
-                        &amp; Peas (Lg) $8.31', 'Subtotal $8.31', 'Taxes 10.35%
-                        $0.83', 'Tip $1.32', 'Discount -$0.32', 'Total $ 10 14',
-                        'US DEBIT $10.14', '5994', 'Cashier: Ari', 'VISA',
-                        'February 06, 2025 +- 1:38 pm', 'Payment ID:
-                        7PMAQZKPR7R8G', 'Order ID: V29H4RW4Y4TEY', 'Order
-                        Employee: Ari', 'Show Details', '&lt; @ 0'
-                      </p> */}
-
                       <p style={{ whiteSpace: "pre-line" }}>{line}</p>
-
+                      {/* <img src={defaultConfig.imagePath + pathArr[index]} alt="" /> */}
                     </div>
                   </div>
                 </div>
-
               </div>
             </div>
           </div>

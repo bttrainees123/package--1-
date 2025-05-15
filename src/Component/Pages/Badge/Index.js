@@ -12,9 +12,11 @@ export default function Index() {
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [paginatedItems, setPaginatedItems] = useState(0);
   const [page, setPage] = useState(1);
+  const [cities, setCities] = useState([])
   const [filter, setFilter] = useState({
-    startDate: moment().subtract(1, "months").format("YYYY-MM-DD"),
-    endDate: moment().format("YYYY-MM-DD"),
+    // startDate: moment().subtract(1, "months").format("YYYY-MM-DD"),
+    // endDate: moment().format("YYYY-MM-DD"),
+    city: "Everett"
   });
   const [submittedFilter, setSubmittedFilter] = useState({ ...filter });
   const lastIndex = page * rowsPerPage;
@@ -24,7 +26,8 @@ export default function Index() {
     try {
       const apiResponse = await callAPI(apiUrls.getBadges, query, "GET");
       if (apiResponse?.data?.status) {
-        setLogoList(apiResponse?.data?.data?.paginatedResult || []);
+        setLogoList(apiResponse?.data?.data?.badgeArray || []);
+        setCities(apiResponse?.data?.data?.cities || []);
         setPaginatedItems(apiResponse?.data?.data?.total || 0);
       } else {
         ErrorMessage(apiResponse?.data?.message);
@@ -44,15 +47,16 @@ export default function Index() {
     setSubmittedFilter(filter); // Store latest filter values
     setPage(1); // Reset to first page
   };
-
   const handleClear = () => {
     setFilter({
-      startDate: moment().subtract(1, "months").format("YYYY-MM-DD"),
-      endDate: moment().format("YYYY-MM-DD"),
+      // startDate: moment().subtract(1, "months").format("YYYY-MM-DD"),
+      // endDate: moment().format("YYYY-MM-DD"),
+      city: "Everett"
     });
     setSubmittedFilter({
-      startDate: moment().subtract(1, "months").format("YYYY-MM-DD"),
-      endDate: moment().format("YYYY-MM-DD"),
+      // startDate: moment().subtract(1, "months").format("YYYY-MM-DD"),
+      // endDate: moment().format("YYYY-MM-DD"),
+      city: "Everett"
     });
     setPage(1);
   };
@@ -71,7 +75,21 @@ export default function Index() {
             <div className="tableheader d-flex align-items-center justify-content-between boderbtn">
               <h2 className="mb-0">	Badges Listing</h2>
               <div className="d-flex gap-2">
-                <div className="d-flex gap-2">
+                <label className="startDate mt-2">City</label>
+                <select
+                  name="city"
+                  className="form-control"
+                  value={filter.city}
+                  onChange={handleSearchFilter}
+                >
+                  {/* <option value="">All Cities</option> */}
+                  {cities.map((city, i) => (
+                    <option key={i} value={city}>
+                      {city}
+                    </option>
+                  ))}
+                </select>
+                {/* <div className="d-flex gap-2">
                   <label className="startDate mt-2">Start Date</label>
                   <input
                     type="date"
@@ -90,13 +108,13 @@ export default function Index() {
                     value={filter.endDate}
                     onChange={handleSearchFilter}
                   />
-                </div>
-                <button
+                </div> */}
+                {/* <button
                   className="btndarkblue modalfooterpadding reviewSubmit"
                   onClick={handleClear}
                 >
                   Clear
-                </button>
+                </button> */}
                 <button
                   className="btndarkblue modalfooterpadding reviewSubmit"
                   onClick={handleSubmit}
@@ -111,29 +129,40 @@ export default function Index() {
                   <tr>
                     <th>#</th>
                     <th>Badges</th>
+                    <th>Menu Item</th>
                   </tr>
                 </thead>
                 <tbody>
                   {logoList.length > 0 ? (
                     logoList.map(
                       (item, i) =>
-                        item.menu.tags.length > 0 && (
-                          <tr key={i}>
-                            <td>{firstIndex + i + 1}</td>
-                            <td>
-                              <div className="badge-container">
-                                {item.menu.tags.map((item1, index) => (
-                                  <div className="menu-badge" key={index}>
-                                    {`#1 ${item1} in ${item?.city
-                                      } this ${moment(item?.createdAt).format(
-                                        "MMMM"
-                                      )}`}
-                                  </div>
-                                ))}
+                      // item.menu.tags.length > 0 && 
+                      (
+                        <tr key={i}>
+                          <td>{firstIndex + i + 1}</td>
+                          <td>
+                            <div className="badge-container">
+                              {/* {item.menu.tags.map((item1, index) => ( */}
+                              <div className="menu-badge"
+                              //  key={index}
+                              >
+                                {`#1 ${item.tags} in ${submittedFilter.city}`}
                               </div>
-                            </td>
-                          </tr>
-                        )
+                              {/* // ))} */}
+                            </div>
+                          </td>
+                          <td>
+                            <div className="badge-container">
+                              {item.menuItems.map((item1, index) => (
+                                <div className="menu-badge" key={index}
+                                >
+                                  {`${item1.itemname}`}
+                                </div>
+                              ))}
+                            </div>
+                          </td>
+                        </tr>
+                      )
                     )
                   ) : !loader ? (
                     <tr>
@@ -154,8 +183,10 @@ export default function Index() {
                       rowsPerPage={rowsPerPage}
                       page={page - 1}
                       onPageChange={(event, newPage) => setPage(newPage + 1)}
-                      onRowsPerPageChange={(event) =>
+                      onRowsPerPageChange={(event) => {
                         setRowsPerPage(parseInt(event.target.value, 10))
+                        setPage(page)
+                      }
                       }
                     />
                   </ul>

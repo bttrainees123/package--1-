@@ -30,6 +30,10 @@ export default function Index() {
     const [logoList, setLogoList] = useState([]);
     const [action, setAction] = useState("");
     const [object, setObject] = useState("");
+
+    const lastIndex = page * rowsPerPage;
+    const firstIndex = lastIndex - rowsPerPage;
+
     const LogoListAPI = async (page, rowsPerPage, search) => {
         setLoader(true);
         try {
@@ -163,7 +167,7 @@ export default function Index() {
                                     {logoList !== undefined && logoList?.length > 0
                                         ? logoList?.map((item, i) => (
                                             <tr key={i}>
-                                                <td>{i + 1}</td>
+                                                <td>{firstIndex + i + 1}</td>
                                                 <td>{item?.name}</td>
                                                 <td>{item?.restauranData?.name ? item?.restauranData?.name : "Admin"}</td>
 
