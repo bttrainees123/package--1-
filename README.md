@@ -81,3 +81,5 @@ all pagination logic correction
 
 <!-- upload restaurant - menu upload and search -->
 <!-- pagination in category page -->
+
+<!-- badges page in admin -->
