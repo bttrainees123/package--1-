@@ -6,7 +6,6 @@ import { defaultConfig } from '../config';
 
 async function callAPI(path, params, method, data = null, options = {}, headersObj = {}) {
     const API_ROOT = defaultConfig.baseAPIUrl;
-
     const url = API_ROOT + path;
     const headers = {
         'Content-Type': 'application/json',
@@ -14,7 +13,6 @@ async function callAPI(path, params, method, data = null, options = {}, headersO
         Authorization: `Bearer ${await localStorage.getItem('accessToken')}`,
         ...headersObj,
     };
-
     return axiosUtil({
         method,
         url,
@@ -62,7 +60,6 @@ async function API(path, params, method, data = null, options = {}, headersObj =
         Authorization: `Bearer ${await localStorage.getItem('accessToken')}`,
         ...headersObj,
     };
-
     return axios({
         method,
         url,

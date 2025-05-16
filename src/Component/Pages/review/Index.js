@@ -106,7 +106,6 @@ export default function Index() {
                   onChange={handleSearchFilter}
                 >
                   <option value="">Status</option>
-
                   <option value={"approved"}>
                     Approved
                   </option>
@@ -116,8 +115,6 @@ export default function Index() {
                   <option value={"rejected"}>
                     Rejected
                   </option>
-
-
                 </select>
                 <select
                   name="Year"
@@ -192,7 +189,6 @@ export default function Index() {
                             : item?.restaurantName
                               ? item.restaurantName
                               : "-----"}
-
                         </td>
                         <td
                           className={item?.likeDislike === "like" ? "reviewLike" : "reviewdisLike"}

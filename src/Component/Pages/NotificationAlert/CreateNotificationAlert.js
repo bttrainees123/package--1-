@@ -32,6 +32,7 @@ export default function CreateNotificationAlert({
             return { ...val, [e.target.name]: e.target.value };
         });
     };
+
     const Serviceadd = async () => {
         const formValid = simpleValidator.current.allValid();
         if (!formValid) {
@@ -57,7 +58,6 @@ export default function CreateNotificationAlert({
                         phoneNumber: "",
                         message: "",
                     });
-
                 } else {
                     ErrorMessage(apiResponse?.data?.message);
                 }
@@ -68,12 +68,12 @@ export default function CreateNotificationAlert({
             }
         }
     };
+
     const handlePhonechange = (value, name) => {
         setCompanyPhoneNumber(value);
         setValue((val) => {
             return { ...val, [name]: value };
         });
-
     };
 
     useEffect(() => {
@@ -91,10 +91,11 @@ export default function CreateNotificationAlert({
             });
         }
     }, [object, action, open]);
-    const handleCancel = () => {
 
+    const handleCancel = () => {
         handleclose()
     }
+    
     return (
         <>
             <Dialog

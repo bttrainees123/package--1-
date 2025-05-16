@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import {
   ApiLoder,
@@ -14,7 +14,7 @@ export default function Index() {
   const [selectedRestaurantOption, setSelectedRestaurantOption] = useState("");
   const [selectedAddressOption, setSelectedAddressOption] = useState("");
   const [selectedMenuOption, setSelectedMenuOption] = useState([])
-  const [selectedMenuAddressOption, setSelectedMenuAddressOption] = useState([]);
+  const [selectedMenuDescriptionOption, setSelectedMenuDescriptionOption] = useState([]);
   const [loader, setLoader] = useState(false);
   const [pathArr, setPathArr] = useState([])
   const [imgArr, setImgArr] = useState([])
@@ -52,12 +52,12 @@ export default function Index() {
     restaurantName: ""
   });
 
-  const [menuInput, setMenuInput] = useState([
-    {
-      itemName: "",
-      description: ""
-    },
-  ])
+  const [menuInput, setMenuInput] = useState([{
+    itemName: "",
+    description: ""
+  }])
+
+  const menuRef = useRef(menuInput)
 
   const handleMultipleMenu = async (e) => {
     const files = Array.from(e.target.files);
@@ -66,7 +66,6 @@ export default function Index() {
     const path = await PostImageMultiple(updatedImgArr);
     pathArr.push(...path);
     setPathArr(pathArr);
-    console.log("pathArr ", pathArr);
     if (path?.length > 0) handleMultiplePath(path);
     e.target.value = null;
   };
@@ -77,6 +76,11 @@ export default function Index() {
     updatedValues[index] = { ...updatedValues[index], [name]: value };
     setMenuValue(updatedValues);
   };
+
+  useEffect(() => {
+    menuRef.current = menuInput;
+    console.log("Updated Menu value: ", menuRef.current);
+  }, [menuInput]);
 
   const ParseMenuData = async (index) => {
     const hasValue = Object.values(menuValue[index]).some((val) => val.trim() !== "");
@@ -93,7 +97,7 @@ export default function Index() {
           data.nameendFrom = menuValue[index].nameendFrom;
         } else if (menuOpt === "chef") data.namelineNumber = menuValue[index].namelineNumber;
       }
-      const descriptionOpt = selectedMenuAddressOption[index];
+      const descriptionOpt = selectedMenuDescriptionOption[index];
       if (descriptionOpt) {
         if (descriptionOpt === "startWith") data.descriptionStartWith = menuValue[index].descriptionStartWith;
         else if (descriptionOpt === "endWith") data.descriptionEndWith = menuValue[index].descriptionEndWith;
@@ -104,7 +108,7 @@ export default function Index() {
       }
       const apiResponse = await callAPI(apiUrls.menuParser, {}, "POST", data);
       if (apiResponse?.data?.status) {
-        console.log("apiResponse ", apiResponse);
+        // console.log("apiResponse ", apiResponse);
         const updatedInputs = [...menuInput];
         updatedInputs[index] = {
           ...updatedInputs[index],
@@ -112,7 +116,7 @@ export default function Index() {
           description: apiResponse?.data?.data?.menuDescription,
         };
         setMenuInput(updatedInputs);
-        console.log("Menu value ", menuInput)
+        // console.log("Menu value ", menuInput)
         SuccessMessage(apiResponse?.data?.message);
       } else {
         ErrorMessage(apiResponse?.data?.message);
@@ -134,10 +138,10 @@ export default function Index() {
     try {
       setLoader(true);
       const apiResponse = await callAPI(apiUrls.reciptMenuParserAdmin, {}, "POST", { images: path })
-      console.log("apiResponse ", apiResponse)
+      // console.log("apiResponse ", apiResponse)
       if (apiResponse?.data?.status) {
         setParseData((prev) => [...prev, ...apiResponse?.data?.data]);
-        console.log("ParseData ", parseData);
+        // console.log("ParseData ", parseData);
         setImgArr([])
         SuccessMessage(apiResponse?.data?.message);
       } else {
@@ -162,7 +166,6 @@ export default function Index() {
       e.target.value = null;
     } else {
       ErrorMessage("Invalid file Format");
-
       e.target.value = null;
       return false;
     }
@@ -396,8 +399,7 @@ export default function Index() {
             <h6>Line Number</h6>
             <input
               className="form-control"
-              type="number"
-
+              type="text"
               name="namelineNumber"
               value={value.namelineNumber || ""}
               onChange={(e) => handleMenuValueChange(index, e)}
@@ -406,7 +408,7 @@ export default function Index() {
           </div>
         );
       }
-    } else if (type === "address") {
+    } else if (type === "description") {
       if (selectedOption === "startWith") {
         return (
           <div className="form-group">
@@ -468,7 +470,7 @@ export default function Index() {
             <h6>Line Number</h6>
             <input
               className="form-control"
-              type="number"
+              type="text"
               name="descriptionlineNumber"
               value={value.descriptionlineNumber || ""}
               onChange={(e) => handleMenuValueChange(index, e)}
@@ -731,13 +733,13 @@ export default function Index() {
                                 <input
                                   className="form-check-input"
                                   type="radio"
-                                  name={`menuAddressOption_${index}`}
+                                  name={`menuDescriptionOption_${index}`}
                                   value={key}
-                                  checked={selectedMenuAddressOption[index] === key}
+                                  checked={selectedMenuDescriptionOption[index] === key}
                                   onChange={(e) => {
-                                    const updated = [...selectedMenuAddressOption];
+                                    const updated = [...selectedMenuDescriptionOption];
                                     updated[index] = e.target.value;
-                                    setSelectedMenuAddressOption(updated);
+                                    setSelectedMenuDescriptionOption(updated);
                                   }}
                                 />{" "}
                               </div>))}
@@ -745,7 +747,7 @@ export default function Index() {
                         </div>
                         <div className="col-lg-12 mb-3">
                           {/* <div id="dynamicInputContainerDescription" /> */}
-                          {renderInputFieldMenu(selectedMenuAddressOption[index], "address", index)}                        </div>
+                          {renderInputFieldMenu(selectedMenuDescriptionOption[index], "description", index)}                        </div>
                         <div className="btndiv d-flex align-items-center gap-3 justify-content-start mt-30 ps-3">
                           <Link to="#" className="btndarkblue" onClick={(e) => ParseMenuData(index)}>
                             Review

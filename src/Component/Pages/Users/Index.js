@@ -22,7 +22,6 @@ export default function Index() {
   const [action, setAction] = useState("")
   const [object, setObject] = useState("")
   const [reviewOpen, setReviewOpen] = useState(false);
-
   const lastIndex = page * rowsPerPage;
   const firstIndex = lastIndex - rowsPerPage;
 
@@ -57,7 +56,6 @@ export default function Index() {
     RestaurantListAPI(pageNo, parseInt(event.target.value, 10), filter.search)
     setRowsPerPage(parseInt(event.target.value, 10));
     setPage(pageNo);
-
   }
 
   const handleSearchFilter = (e) => {
@@ -65,9 +63,7 @@ export default function Index() {
     setFilter((val) => {
       return { ...val, ['search']: e.target.value };
     });
-
   }
-
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -82,16 +78,13 @@ export default function Index() {
     RestaurantListAPI(page, rowsPerPage, filter.search)
   }
 
-
   const handleclose = () => {
     setOpen(false)
-
   }
+
   const handledelclose = () => {
     setDelOpen(false)
-
   }
-
 
   const handleDelete = async () => {
     setLoader(true)
@@ -115,7 +108,6 @@ export default function Index() {
     <>
       <div id="page-container" className="page_contclass">
         <Topbar Title="USERS" Subtitle="Users">
-
         </Topbar>
         <div className="inner-main-content">
           {loder && <ApiLoder />}
@@ -135,7 +127,6 @@ export default function Index() {
               </div>
             </div>
             <div className="table-responsive">
-
               <table className="table mb-0">
                 <thead>
                   <tr>
@@ -162,7 +153,6 @@ export default function Index() {
                           setObject(item)
                           setReviewOpen(true)
                         }
-
                       })
                       }>{item?.reviewCount}</Link></td>
                       {/* <td>
@@ -198,7 +188,6 @@ export default function Index() {
                       </div>
                     </td>
                   </tr>}
-
                 </tbody>
               </table>
               <div className="d-flex align-items-center justify-content-end bottom_nav">
@@ -218,7 +207,6 @@ export default function Index() {
               </div>
             </div>
           </div>
-
         </div>
       </div>
       <ReviewList ReviewList={object} open={reviewOpen} handleClose={(() => setReviewOpen(false))} status={false} />

@@ -7,11 +7,8 @@ const axiosInt = axios.create({
 }
 );
 
-
-
 axiosInt.interceptors.response.use(
   (response) => {
-
     return response;
   },
   (error) => {

@@ -46,7 +46,6 @@ export default function AddTag({ open, handleclose, LogoListAPI, action, object 
                     value
                 );
                 console.log("apiResponse", apiResponse);
-
                 if (apiResponse?.data?.status === true) {
                     SuccessMessage(apiResponse?.data?.message);
                     await LogoListAPI();
@@ -176,7 +175,6 @@ export default function AddTag({ open, handleclose, LogoListAPI, action, object 
                                                                     }}
                                                                     className="form-control formcontmodelinput "
                                                                 />
-
                                                                 <button
                                                                     onClick={() => {
                                                                         deleteItem(i);

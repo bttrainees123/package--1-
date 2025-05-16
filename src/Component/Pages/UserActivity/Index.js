@@ -106,7 +106,6 @@ export default function Index() {
                     <th>URL</th>
                     <th>Users Visit</th>
                     <th>UnKnown Visit</th>
-
                     <th>status</th>
                     <th className="text-end">Actions</th>
                   </tr>
@@ -136,7 +135,6 @@ export default function Index() {
                             {item.totalUnkownUser ? item.totalUnkownUser : 0}
                           </Link>
                         </td>
-
                         <td>
                           <Link
                             to="#"

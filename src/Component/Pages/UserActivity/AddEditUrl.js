@@ -41,7 +41,6 @@ export default function AddEditUrl({ open, handleclose, LogoListAPI, action, obj
                         : "POST",
                     value
                 );
-
                 if (apiResponse?.data?.status === true) {
                     SuccessMessage(apiResponse?.data?.message);
                     await LogoListAPI();
@@ -67,7 +66,6 @@ export default function AddEditUrl({ open, handleclose, LogoListAPI, action, obj
                 url: object.url,
                 status: object.status,
                 type: "other"
-
             });
         } else setValue({
             url: "",
@@ -149,7 +147,6 @@ export default function AddEditUrl({ open, handleclose, LogoListAPI, action, obj
                                                 Inactive
                                             </option>
                                         </select>
-
                                     </div>
                                 </div>
                             </form>

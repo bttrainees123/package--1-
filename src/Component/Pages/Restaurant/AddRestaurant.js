@@ -502,7 +502,6 @@ export default function AddRestaurant({
                       );
                     })}
                   </div>
-
                   <div className="col-lg-6 col-md-6 col-12 mb-3">
                     <label htmlFor="">Phone No *</label>
                     <PhoneInput
@@ -522,7 +521,6 @@ export default function AddRestaurant({
                       )}
                     </div>
                   </div>
-
                   <div className="col-lg-6 col-md-6 col-12 mb-3">
                     <label htmlFor="">Leader Board Heading</label>
                     <input
@@ -532,7 +530,6 @@ export default function AddRestaurant({
                       name="leaderBoardHeading"
                       onChange={handleChange}
                     />
-
                   </div>
 
                   {/* <div className="col-lg-6 col-md-6 col-12 mb-3">
@@ -545,7 +542,6 @@ export default function AddRestaurant({
                       onChange={handleChange}
                     />
                   </div> */}
-
                   <div className="col-lg-12 col-md-6 col-12 mb-3">
                     <label htmlFor="">Address *</label>
                     <PlacesAutocomplete
@@ -638,7 +634,6 @@ export default function AddRestaurant({
                       )}
                     </div>
                   </div>
-
                   <div className="col-lg-4 col-md-4 col-12 mb-3">
                     <label htmlFor="">State Code*</label>
                     <input
@@ -656,7 +651,6 @@ export default function AddRestaurant({
                       )}
                     </div>
                   </div>
-
                   <div className="col-lg-12 col-md-12 col-12 mb-3">
                     <label htmlFor="">Description</label>
                     <ReactQuill
@@ -678,7 +672,6 @@ export default function AddRestaurant({
                       placeholder="Type and press Enter..."
                     />
                   </div>
-
                   <div className="row mb-3">
                     <div className="col-lg-12 col-md-12 col-12">
                       <div
@@ -692,7 +685,6 @@ export default function AddRestaurant({
                       </div>
                     </div>
                   </div>
-
                   {referencesItem?.map((elementInArray, index) => {
                     return (
                       <div className="row" id="childadd" key={index}>
@@ -762,7 +754,6 @@ export default function AddRestaurant({
                       </div>
                     );
                   })}
-
                   <div className="row mb-3">
                     <div className="col-lg-12 col-md-12 col-12">
                       <div
@@ -779,7 +770,6 @@ export default function AddRestaurant({
                       </div>
                     </div>
                   </div>
-
                   {referencesmedia?.map((elementInArray, index) => {
                     return (
                       <div className="row" id="childadd" key={index}>
@@ -808,7 +798,6 @@ export default function AddRestaurant({
                               </option>
                             ))}
                           </select>
-
                         </div>
                         <div className="col-lg-5 col-md-5 col-12 mb-3">
                           <label htmlFor="">Upload LInk</label>
@@ -821,7 +810,6 @@ export default function AddRestaurant({
                             name="mediaLink"
                             value={elementInArray?.mediaLink}
                           />
-
                         </div>
                         {index !== 0 && (
                           <div className="col-lg-1 col-md-1 col-12 mb-3 mt-4">

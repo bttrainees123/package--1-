@@ -7,7 +7,6 @@ import { apiUrls } from '../../../utils/apiUrls';
 import PhoneInput from "react-phone-input-2";
 import "react-phone-input-2/lib/bootstrap.css";
 
-
 export default function Addupdateuser({ open,
   handleclose,
   handleSubmitApi,
@@ -29,8 +28,6 @@ export default function Addupdateuser({ open,
       return { ...val, [e.target.name]: e.target.value };
     });
   };
-
-
 
   const Serviceadd = async () => {
     const formValid = simpleValidator.current.allValid();
@@ -176,10 +173,7 @@ export default function Addupdateuser({ open,
                         Inactive
                       </option>
                     </select>
-
                   </div>
-
-
                 </div>
               </form>
             </div>
@@ -196,12 +190,9 @@ export default function Addupdateuser({ open,
                 disabled={loader}
                 onClick={Serviceadd}
               />
-
             </div>
           </div>
         </div>
-
-
       </Dialog>
     </>
   )

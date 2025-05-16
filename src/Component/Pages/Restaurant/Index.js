@@ -28,17 +28,15 @@ export default function Index() {
       } else {
         ErrorMessage(apiResponse?.data?.message)
       }
-
     } catch (error) {
-
       ErrorMessage(error?.message)
     }
   }
 
-
   const handleClose = () => {
     setOpen(false)
   }
+
   const handleSubmitApi = () => {
     setUpdate(true)
   }
@@ -57,12 +55,11 @@ export default function Index() {
       } else {
         ErrorMessage(apiResponse?.data?.message)
       }
-
     } catch (error) {
-
       ErrorMessage(error?.message)
     }
   }
+
   const medaiListAPI = async () => {
     try {
       let query = {};
@@ -77,12 +74,11 @@ export default function Index() {
       } else {
         ErrorMessage(apiResponse?.data?.message)
       }
-
     } catch (error) {
-
       ErrorMessage(error?.message)
     }
   }
+  
   useEffect(() => {
     LogoListAPI();
     medaiListAPI();

@@ -29,13 +29,13 @@ export default function OutnetworkResturent({ update, logoList, type, TagsListin
   const [editOpen, setEditOpen] = useState(false);
   const [reviewOpen, setReviewOpen] = useState(false);
   const [TagsData, setTagsData] = useState([])
-
   const lastIndex = page * rowsPerPage;
   const firstIndex = lastIndex - rowsPerPage;
 
   const handleClose = () => {
     setEditOpen(false);
   };
+
   const tagApi = async () => {
     try {
       let query = {};
@@ -50,9 +50,7 @@ export default function OutnetworkResturent({ update, logoList, type, TagsListin
       } else {
         ErrorMessage(apiResponse?.data?.message)
       }
-
     } catch (error) {
-
       ErrorMessage(error?.message)
     }
   }
@@ -100,6 +98,7 @@ export default function OutnetworkResturent({ update, logoList, type, TagsListin
       return { ...val, search: e.target.value };
     });
   };
+
   useEffect(() => {
     tagApi()
   }, [])
@@ -194,7 +193,6 @@ export default function OutnetworkResturent({ update, logoList, type, TagsListin
                 <th>OCR logic</th>
                 <th>Total Reviews</th>
                 <th>QR Code</th>
-
                 {type === "inNetwork" && <th>Menu builder</th>}
                 <th className="text-end">Actions</th>
               </tr>
@@ -257,11 +255,9 @@ export default function OutnetworkResturent({ update, logoList, type, TagsListin
                         </svg>
                       </Link>
                     </div>
-
                     {type === "inNetwork" && <td><img alt='' src='/image/view.png' style={{ cursor: "pointer" }} onClick={(() => NavigateTo(item))} className='img-fluid' /></td>}
                     <td className="text-start">
                       <div className="actionbtn d-flex align-items-center justify-content-end gap-2">
-
                         <Link
                           to="#"
                           className="editlink"
@@ -282,7 +278,6 @@ export default function OutnetworkResturent({ update, logoList, type, TagsListin
                         >
                           <DeleteSvg />
                         </Link>
-
                       </div>
                     </td>
                   </tr>

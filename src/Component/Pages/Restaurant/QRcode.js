@@ -34,7 +34,6 @@ export default function QRcode({ open, qrImage, handleClose }) {
                 />
               </figure>
             </div>
-
           </div>
         </div>
       </Dialog>

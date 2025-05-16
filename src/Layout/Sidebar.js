@@ -13,7 +13,6 @@ export default function Sidebar() {
   const handleClose = () => {
     setOpen(false);
   };
-
   const admin_links = [
     {
       link: "/admin/dashborad",
@@ -35,7 +34,6 @@ export default function Sidebar() {
       title: "User",
       icone: <UserSvg />,
     },
-
     // {
     //   link: "/admin/category",
     //   title: "Category",
@@ -81,17 +79,11 @@ export default function Sidebar() {
       title: "Review",
       icone: <ReviewSvg />,
     },
-
-
   ];
-
   React.useEffect(() => {
     setLinks(admin_links);
     // eslint-disable-next-line
   }, []);
-
-
-
   return (
     <>
       <div id="logo">

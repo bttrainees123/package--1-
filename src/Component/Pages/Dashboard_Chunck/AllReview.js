@@ -36,12 +36,9 @@ export default function AllReview({ dasboardData, DashboardListAPI }) {
         item[e.target.name] = e.target.value
       }
       return item;
-
     })
     setItemList(data);
-
   }
-
 
   const PostReview = async (id, status) => {
     try {
@@ -59,8 +56,8 @@ export default function AllReview({ dasboardData, DashboardListAPI }) {
         message: ItemList[0]?.message,
         dateAndTime: ItemList[0]?.dateAndTime,
         total_price: ItemList[0]?.total_price
-      }
-        ;
+      };
+      
       const apiResponse = await callAPI(apiUrls.approveRejectReview, {}, "POST", body);
       setLoder(false)
       if (apiResponse?.data?.status) {

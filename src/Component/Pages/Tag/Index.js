@@ -373,7 +373,6 @@ export default function Index() {
                   ></i>
                 )}
               </button>
-
               <button
                 type="button"
                 className="btndarkblue-outline modalfooterpadding"

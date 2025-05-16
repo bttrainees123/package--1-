@@ -41,19 +41,15 @@ export default function EditRestaurant({
   const [companyPhoneNumber, setCompanyPhoneNumber] = useState("");
   const simpleValidator = useRef(new SimpleReactValidator());
   const [menu, setMenu] = useState("");
-  const [referencesItem, setReferencesItem] = useState([
-    {
-      imageId: "",
-      imageLink: "",
-    },
-  ]);
+  const [referencesItem, setReferencesItem] = useState([{
+    imageId: "",
+    imageLink: "",
+  }]);
 
-  const [referencesmedia, setReferencesMedia] = useState([
-    {
-      mediaId: "",
-      mediaLink: "",
-    },
-  ]);
+  const [referencesmedia, setReferencesMedia] = useState([{
+    mediaId: "",
+    mediaLink: "",
+  }]);
 
   const [image, setImage] = useState("");
   const [, forceUpdate] = useState();
@@ -108,7 +104,6 @@ export default function EditRestaurant({
           : "",
       }));
     });
-
     setInputs((val) => ({
       ...val,
       receiptAddress: results[0].formatted_address,
@@ -180,18 +175,14 @@ export default function EditRestaurant({
       coordinates: [0, 0],
       type: "Point",
     });
-    setReferencesItem([
-      {
-        imageId: "",
-        imageLink: "",
-      },
-    ]);
-    setReferencesMedia([
-      {
-        mediaId: "",
-        mediaLink: "",
-      },
-    ]);
+    setReferencesItem([{
+      imageId: "",
+      imageLink: "",
+    }]);
+    setReferencesMedia([{
+      mediaId: "",
+      mediaLink: "",
+    }]);
     setImage("");
   };
 
@@ -254,22 +245,18 @@ export default function EditRestaurant({
 
   const addReferencesRow = () => {
     const updatedData = [
-      ...referencesItem,
-      {
+      ...referencesItem, {
         imageId: "",
         imageLink: "",
-      },
-    ];
+      }];
     setReferencesItem(updatedData);
   };
   const addReferencesRowMedia = () => {
     const updatedData = [
-      ...referencesmedia,
-      {
+      ...referencesmedia, {
         mediaId: "",
         mediaLink: "",
-      },
-    ];
+      }];
     setReferencesMedia(updatedData);
   };
 
@@ -292,7 +279,6 @@ export default function EditRestaurant({
           return curElem;
         }
       });
-
       if (findlist !== undefined) {
         let itemObj = findlist[0];
         let obj = { ...itemObj, [e.target.name]: e.target.value };
@@ -301,7 +287,6 @@ export default function EditRestaurant({
             return elm;
           }
         });
-
         referencesItem[findindex] = obj;
         setReferencesItem(referencesItem);
       }
@@ -316,7 +301,6 @@ export default function EditRestaurant({
           return curElem;
         }
       });
-
       if (findlist !== undefined) {
         let itemObj = findlist[0];
         let obj = { ...itemObj, [e.target.name]: e.target.value };
@@ -325,7 +309,6 @@ export default function EditRestaurant({
             return elm;
           }
         });
-
         referencesmedia[findindex] = obj;
         setReferencesMedia(referencesmedia);
       }
@@ -344,7 +327,6 @@ export default function EditRestaurant({
       if (object?.media?.length > 0) {
         setReferencesMedia(object?.media);
       }
-
       setCompanyPhoneNumber(object?.phoneNo);
       setInputs(object);
       setInputs((prev) => ({
@@ -532,7 +514,6 @@ export default function EditRestaurant({
                       );
                     })}
                   </div>
-
                   <div className="col-lg-6 col-md-6 col-12 mb-3">
                     <label htmlFor="">Phone No *</label>
                     <PhoneInput
@@ -554,7 +535,6 @@ export default function EditRestaurant({
                   {/* <div className="col-lg-6 col-md-6 col-12 mb-3">
                     <label htmlFor="">Opening Time</label>
                     <input type="text" className="form-control" value={inputs?.openingHours} name='openingHours' onChange={handleChange} />
-
                   </div> */}
                   <div className="col-lg-6 col-md-6 col-12 mb-3">
                     <label htmlFor="">Select Network</label>
@@ -589,7 +569,6 @@ export default function EditRestaurant({
                       name="leaderBoardHeading"
                       onChange={handleChange}
                     />
-
                   </div>
                   <div className="col-lg-12 col-md-6 col-12 mb-3">
                     <label htmlFor="">Address *</label>
@@ -639,7 +618,6 @@ export default function EditRestaurant({
                       )}
                     </div>
                   </div>
-
                   <div className="col-lg-12 col-md-12 col-12 mb-3">
                     <label htmlFor="">Receipt Address</label>
                     <input
@@ -740,7 +718,6 @@ export default function EditRestaurant({
                       </div>
                     </div>
                   </div>
-
                   {referencesItem?.map((elementInArray, index) => {
                     return (
                       <div className="row" id="childadd" key={index}>

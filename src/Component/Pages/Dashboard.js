@@ -11,8 +11,6 @@ import Review_History from './Dashboard_Chunck/Review_History'
 export default function Dashboard() {
   const [loder, setLoader] = useState(false)
   const [dasboardData, setdasboardData] = useState({})
-
-
   const DashboardListAPI = async (page) => {
     setLoader(true)
     try {
@@ -34,7 +32,6 @@ export default function Dashboard() {
     DashboardListAPI();
   }, [])
 
-
   const ApiCall = (status) => {
     setLoader(status)
   }
@@ -44,23 +41,16 @@ export default function Dashboard() {
       {loder && <ApiLoder />}
       <div id="page-container" className="page_contclass">
         <Breadcrumb title={"Dashboard"} subtitle={"Home"} childrenTitle={"Dashboard"} link={"#"} />
-
         <div className="inner-main-content">
           <HeaderPart dasboardData={dasboardData} />
           <div className="boxtopmain mb-30">
             <div className="row">
-
               <div className="col-lg-3 col-md-6 col-12 mb-lg-0 mb-md-4 mb-3">
                 <div className="boxone">
                   <div className="d-flex justify-content-between gap-3">
-
                     <figure>
                       <img src="/image/godaddy.png" className="img-fluid" alt="" />
                     </figure>
-
-
-
-
                   </div>
                   <Link to="https://www.godaddy.com/" className="textlink" target='_blank'>
                     View Link
@@ -85,9 +75,6 @@ export default function Dashboard() {
                     <figure>
                       <img src="/image/twilio.png" className="img-fluid" alt="" />
                     </figure>
-
-
-
                   </div>
                   <Link to="https://www.twilio.com/" className="textlink" target='_blank'>
                     View Link
@@ -112,9 +99,6 @@ export default function Dashboard() {
                     <figure>
                       <img src="/image/map.png" className="img-fluid" alt="" />
                     </figure>
-
-
-
                   </div>
                   <Link to="https://cloud.google.com/" className="textlink" target='_blank'>
                     View Link
@@ -139,9 +123,6 @@ export default function Dashboard() {
                     <figure>
                       <img src="/image/zoho.png" className="img-fluid" alt="" />
                     </figure>
-
-
-
                   </div>
                   <Link to="https://www.zoho.com/" className="textlink" target='_blank'>
                     View Link
@@ -160,10 +141,8 @@ export default function Dashboard() {
                   </Link>
                 </div>
               </div>
-
             </div>
           </div>
-
           <PendingResturent ApiCall={ApiCall} />
           <AllReview dasboardData={dasboardData} DashboardListAPI={DashboardListAPI} />
           {/* <div className="tablecard mb-30">
@@ -245,12 +224,8 @@ export default function Dashboard() {
             </div>
           </div> */}
           <Review_History ApiCall={ApiCall} />
-
-
         </div>
       </div>
-
-
     </>
   )
 }

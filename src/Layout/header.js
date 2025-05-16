@@ -224,7 +224,6 @@ export default function Header() {
             </div>
           </div>
         </div>
-
       </div>
       <Logout open={open} handleClose={handleClose} />
     </>

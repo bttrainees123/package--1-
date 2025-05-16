@@ -83,7 +83,6 @@ export default function AddEditnfc({
         label: object.label,
       });
       console.log("Value", value);
-
     } else
       setValue({
         url: defaultConfig.Appurl,
@@ -124,8 +123,6 @@ export default function AddEditnfc({
       }));
     }
   }, [value.restaurantId, value.label]);
-
-
 
   return (
     <>
@@ -174,8 +171,6 @@ export default function AddEditnfc({
                       {logoList?.map((val, i) => (
                         <option value={val._id} key={i}>{val.name}</option>
                       ))}
-
-
                     </select>
                     <div className="error">
                       {simpleValidator.current.message(
@@ -195,7 +190,6 @@ export default function AddEditnfc({
                       value={value.label}
                       name="label"
                     />
-
                   </div>
                   <div className="col-lg-12 col-md-12 col-12 mb-3">
                     <label htmlFor="">Status</label>
@@ -220,11 +214,9 @@ export default function AddEditnfc({
                       </option>
                     </select>
                   </div>
-
                 </div>
               </form>
             </div>
-
             <div className="modal-footer p-0 border-top-0 justify-content-center gap-3">
               <button
                 type="button"

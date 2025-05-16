@@ -50,9 +50,7 @@ export default function Index() {
     }
   };
 
-
   const RestaurantListAPI = async () => {
-
     try {
       let query = {
         page: 1,
@@ -67,9 +65,7 @@ export default function Index() {
       } else {
         ErrorMessage(apiResponse?.data?.message);
       }
-
     } catch (error) {
-
       ErrorMessage(error?.message);
     }
   };

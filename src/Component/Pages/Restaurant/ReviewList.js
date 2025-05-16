@@ -38,7 +38,6 @@ export default function ReviewList({ open, handleClose, ReviewList, status }) {
               />
             </div>
             <div className="modal-body px-0 py-4">
-
               {ReviewList?.reviewdata !== undefined && ReviewList?.reviewdata?.map((val, i) => (
                 <div className="contentdivbox gap-4 d-flex boderbtn" key={i}>
                   <div className="s_no">#{i + 1}</div>
@@ -89,8 +88,6 @@ export default function ReviewList({ open, handleClose, ReviewList, status }) {
                         <p>$ {val?.total_price ? val?.total_price : 0}</p>
                       </div>
                     </div>
-
-
                     {val?.likeDislike === "like" ?
                       <div className="ratebox d-flex align-items-center gap-3 mt-4" >
                         <figure className="mb-0" style={{ height: "40px", border: "none" }}>
@@ -102,13 +99,11 @@ export default function ReviewList({ open, handleClose, ReviewList, status }) {
                           <img src="/image/dislike.png" className="img-fluid" alt="" />
                         </figure>
                         <div>
-
                           <p>
                             {val?.review}
                           </p>
                         </div>
                       </div>
-
                     }
                     <div className="odr-menu my-2">
                       <h3 className="mb-0">Order Menu Items</h3>
@@ -136,8 +131,6 @@ export default function ReviewList({ open, handleClose, ReviewList, status }) {
 
           </div>
         </div>
-
-
       </Dialog>
     </>
   )

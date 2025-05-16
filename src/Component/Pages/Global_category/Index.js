@@ -170,7 +170,6 @@ export default function Index() {
                                                 <td>{firstIndex + i + 1}</td>
                                                 <td>{item?.name}</td>
                                                 <td>{item?.restauranData?.name ? item?.restauranData?.name : "Admin"}</td>
-
                                                 <td>
                                                     <Link
                                                         to="#"

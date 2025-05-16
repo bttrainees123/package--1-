@@ -43,7 +43,6 @@ export default function ViewUsertrack() {
     return activities.reduce((acc, activity) => {
       const userId = activity.userId;
       const visitDate = new Date(activity.visitDate).toLocaleString();
-
       if (!acc[userId]) {
         acc[userId] = {
           name: activity.userDetails.name,
@@ -119,9 +118,7 @@ export default function ViewUsertrack() {
               <h2 className="mb-0">
                 {logoList[0]?.url}
               </h2>
-
             </div>
-
             <div className="container-fluid mt-4">
               <div className="row mt-4">
                 {/* Left Column: Registered Users */}
@@ -230,7 +227,6 @@ export default function ViewUsertrack() {
                                 ))}
                               </ul>
                             </div>
-
                           </div>
                         </div>
                       )

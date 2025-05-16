@@ -4,7 +4,7 @@ import { ApiLoder, ErrorMessage } from "../../../helpers/common";
 import { apiUrls } from "../../../utils/apiUrls";
 import Topbar from "../../../Layout/Topbar";
 import { TablePagination } from "@mui/material";
-import moment from "moment";
+// import moment from "moment";
 
 export default function Index() {
   const [loader, setLoader] = useState(false);
@@ -47,19 +47,19 @@ export default function Index() {
     setSubmittedFilter(filter); // Store latest filter values
     setPage(1); // Reset to first page
   };
-  const handleClear = () => {
-    setFilter({
-      // startDate: moment().subtract(1, "months").format("YYYY-MM-DD"),
-      // endDate: moment().format("YYYY-MM-DD"),
-      city: "Everett"
-    });
-    setSubmittedFilter({
-      // startDate: moment().subtract(1, "months").format("YYYY-MM-DD"),
-      // endDate: moment().format("YYYY-MM-DD"),
-      city: "Everett"
-    });
-    setPage(1);
-  };
+  // const handleClear = () => {
+  //   setFilter({
+  // startDate: moment().subtract(1, "months").format("YYYY-MM-DD"),
+  // endDate: moment().format("YYYY-MM-DD"),
+  //   city: "Everett"
+  // });
+  // setSubmittedFilter({
+  // startDate: moment().subtract(1, "months").format("YYYY-MM-DD"),
+  // endDate: moment().format("YYYY-MM-DD"),
+  //     city: "Everett"
+  //   });
+  //   setPage(1);
+  // };
 
   useEffect(() => {
     LogoListAPI({ ...submittedFilter, page, limit: rowsPerPage });

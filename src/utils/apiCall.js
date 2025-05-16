@@ -2,7 +2,6 @@ import { ErrorMessage } from "../helpers/common";
 import { apiUrls } from "./apiUrls";
 import { API } from "./apiUtils";
 
-
 export const PostImage = async (body) => {
   try {
     const formData = new FormData();
@@ -28,7 +27,6 @@ export const PostImageMultiple = async (imgArr) => {
       console.log("Image ", image)
       formData.append('tempImage', image);
     });
-
   try {
     const apiResponse = await API(apiUrls.uploadImageArr, {}, "POST", formData);
     if (apiResponse.data.status) {
@@ -37,7 +35,6 @@ export const PostImageMultiple = async (imgArr) => {
     else {
       ErrorMessage(apiResponse?.data?.message)
     }
-
   }
   catch (err) {
     ErrorMessage(err?.message)

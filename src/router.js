@@ -200,7 +200,7 @@ const routes = [
     element: lazy(() => import('./Component/Pages/UploadRestaurant/Index'))
   },
 
-  
+
 
   {
     guard: Authenticated,

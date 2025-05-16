@@ -34,12 +34,15 @@ export default function Index() {
             ErrorMessage(error?.message)
         }
     }
+
     const handleclose = () => {
         setOpen(false)
     }
+
     useEffect(() => {
         LogoListAPI();
     }, [])
+
     return (
         <>
             <div id="page-container" className="page_contclass">
@@ -62,7 +65,6 @@ export default function Index() {
                     <div className="tablecard mb-30">
                         <div className="tableheader d-flex align-items-center justify-content-between boderbtn">
                             <h2 className="mb-0">Alert Message</h2>
-
                         </div>
                         <div className="table-responsive">
                             <table className="table mb-0">
@@ -90,10 +92,8 @@ export default function Index() {
                                                     }>
                                                         <EditSvg />
                                                     </Link>
-
                                                 </div>
                                             </td>
-
                                         </tr>
                                     )) : !loder && <tr>
                                         <td colSpan="5">
@@ -102,14 +102,10 @@ export default function Index() {
                                             </div>
                                         </td>
                                     </tr>}
-
-
                                 </tbody>
                             </table>
-
                         </div>
                     </div>
-
                 </div>
             </div>
             <CreateNotificationAlert open={open} handleclose={handleclose} action={action} LogoListAPI={LogoListAPI} object={object} />

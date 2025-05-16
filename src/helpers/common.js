@@ -58,7 +58,6 @@ const HandleDelete = ({
                   ></i>
                 )}
               </button>
-
               <button
                 type="button"
                 className="btndarkblue-outline modalfooterpadding"
@@ -73,8 +72,6 @@ const HandleDelete = ({
     </>
   );
 };
-
-
 
 function CapitalizeLetter(string) {
   return string?.toUpperCase();

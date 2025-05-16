@@ -17,7 +17,6 @@ export default function UserHistory() {
   const [filter, setFilter] = useState({ search: "" });
   const [restaurantListAPIList, setRestaurantListAPIList] = useState([]);
   const param = useParams();
-
   const lastIndex = page * rowsPerPage;
   const firstIndex = lastIndex - rowsPerPage;
 
@@ -30,7 +29,6 @@ export default function UserHistory() {
         if (apiResponse?.data?.data?.paginatedResults?.length > 0) {
           setRestaurantListAPIList(apiResponse.data.data.paginatedResults)
         } else setRestaurantListAPIList([])
-
         setuserData(apiResponse?.data?.userData)
         setPaginatedItems(apiResponse?.data?.data?.totalCount)
       } else {
@@ -43,7 +41,6 @@ export default function UserHistory() {
     }
   }
 
-
   const handleChangePage = (event, newPage) => {
     RestaurantListAPI(newPage + 1, rowsPerPage, filter.search)
     setPage(newPage + 1);
@@ -54,7 +51,6 @@ export default function UserHistory() {
     RestaurantListAPI(pageNo, parseInt(event.target.value, 10), filter.search)
     setRowsPerPage(parseInt(event.target.value, 10));
     setPage(pageNo);
-
   }
 
   const handleSearchFilter = (e) => {
@@ -62,9 +58,7 @@ export default function UserHistory() {
     setFilter((val) => {
       return { ...val, ['search']: e.target.value };
     });
-
   }
-
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -74,8 +68,6 @@ export default function UserHistory() {
       clearTimeout(timer)
     }
   }, [filter.search])
-
-
 
   function IdentifyEventType(type, data, item) {
     switch (type) {
@@ -118,16 +110,11 @@ export default function UserHistory() {
     }
   }
 
-
-
-
-
   return (
     <>
       {loder && <ApiLoder />}
       <div id="page-container" className="page_contclass">
         <Topbar Title="USERS" Subtitle="Users History">
-
         </Topbar>
         <div className="inner-main-content">
           <div className="tablecard mb-30">
@@ -175,7 +162,6 @@ export default function UserHistory() {
                     <td>--------</td>
                     <td>--------</td>
                     <td>--------</td>
-
                   </tr>
                   {(restaurantListAPIList !== undefined && restaurantListAPIList?.length > 0) ? restaurantListAPIList?.map((item, i) => (
                     <tr key={i}>
@@ -220,7 +206,6 @@ export default function UserHistory() {
           </div>
         </div>
       </div>
-
     </>
   )
 }

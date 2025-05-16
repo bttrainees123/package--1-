@@ -94,13 +94,11 @@ export default function AddandEditMenu({
   // const handleZero = () => {
   //   handleValueChange("isFakeHeart", 0);
   //   handleValueChange("isFakeLike", 0);
-
   // }
 
   const handleValueChange = (name, value) => {
     if (name === "points") {
       console.log(name, value);
-
       const pointsValue = Number(value);
       if (!Number.isInteger(pointsValue) || pointsValue < 0) {
         ErrorMessage(
@@ -112,8 +110,8 @@ export default function AddandEditMenu({
     setValue((detail) => {
       return { ...detail, [name]: value };
     });
-
   };
+
   const Serviceadd = async () => {
     const formValid = simpleValidator.current.allValid();
     if (!formValid) {
@@ -134,7 +132,6 @@ export default function AddandEditMenu({
         );
         if (apiResponse?.data?.status === true) {
           SuccessMessage(apiResponse?.data?.message);
-
           setValue({ ...inslizeState, tags: [] });
           console.log("apiResponse", value.isFakeHeart)
           LogoListAPI();
