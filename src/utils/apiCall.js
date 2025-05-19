@@ -1,4 +1,4 @@
-import { ErrorMessage } from "../helpers/common";
+import { ErrorMessage, SuccessMessage } from "../helpers/common";
 import { apiUrls } from "./apiUrls";
 import { API } from "./apiUtils";
 

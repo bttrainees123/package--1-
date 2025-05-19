@@ -9,7 +9,7 @@ export const defaultConfig = {
   //Client Live Url
   //  baseAPIUrl:"https://admin.n-again.com/api/", 
   //  imagePath:"https://admin.n-again.com/images/", 
-  //Appurl:"https://n-again.com/in_restaurants/details/"
+  // Appurl:"https://n-again.com/in_restaurants/details/"
 
   //localhost
   baseAPIUrl: "http://192.168.0.3:7000/api/",

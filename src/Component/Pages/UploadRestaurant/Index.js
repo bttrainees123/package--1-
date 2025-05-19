@@ -9,6 +9,8 @@ import { PostImage, PostImageMultiple } from "../../../utils/apiCall";
 import { callAPI } from "../../../utils/apiUtils";
 import { apiUrls } from "../../../utils/apiUrls";
 import { defaultConfig } from "../../../config";
+import PlacesAutocomplete, { geocodeByAddress, getLatLng } from "react-places-autocomplete";
+import SimpleReactValidator from "simple-react-validator";
 
 export default function Index() {
   const [selectedRestaurantOption, setSelectedRestaurantOption] = useState("");
@@ -18,7 +20,28 @@ export default function Index() {
   const [loader, setLoader] = useState(false);
   const [pathArr, setPathArr] = useState([])
   const [imgArr, setImgArr] = useState([])
+  const [address, setAddress] = useState("");
+  const [check, setCheck] = useState(false)
+  const simpleValidator = useRef(new SimpleReactValidator());
+  const [filter, setFilter] = useState({
+    restaurant: ""
+  });
+  const [resId, setResId] = useState('')
   const [parseData, setParseData] = useState([])
+  const [responseData, setResponseData] = useState(
+    {
+      profileImage: '',
+      stateCode: '',
+      name: '',
+      lattitude: 0,
+      longitude: 0,
+      address: '',
+      receiptAddress: '',
+      state: '',
+      city: '',
+
+    }
+  )
   const [menuValue, setMenuValue] = useState([{
     parsedData: "",
     nameStartWith: '',
@@ -32,7 +55,6 @@ export default function Index() {
     descriptionendFrom: '',
     descriptionlineNumber: ''
   }])
-
   const [value, setValue] = useState({
     parsedData: "",
     nameStartWith: "",
@@ -46,19 +68,29 @@ export default function Index() {
     addressendFrom: "",
     addresslineNumber: "",
   });
+  const [logoList, setLogoList] = useState([]);
 
   const [input, seInput] = useState({
     restaurantAddress: "",
     restaurantName: ""
   });
-
   const [menuInput, setMenuInput] = useState([{
     itemName: "",
     description: ""
   }])
-
+  const [latLong, setLatLong] = useState({
+    coordinates: [0, 0],
+    type: "Point",
+  });
   const menuRef = useRef(menuInput)
-
+  const resDataRef = useRef(responseData)
+  const handleChangemap = (address) => {
+    setResponseData((val) => ({
+      ...val,
+      address: address,
+    }))
+    seInput((val) => ({ ...val, restaurantAddress: address }));
+  };
   const handleMultipleMenu = async (e) => {
     const files = Array.from(e.target.files);
     const updatedImgArr = [...imgArr, ...files];
@@ -70,6 +102,90 @@ export default function Index() {
     e.target.value = null;
   };
 
+  const RestaurantListAPI = async () => {
+    try {
+      const apiResponse = await callAPI(apiUrls.getRestaurantName, {}, "GET");
+      if (apiResponse?.data?.status) {
+        if (apiResponse?.data?.data?.length > 0) {
+          setLogoList(apiResponse.data.data);
+        } else {
+          setLogoList([]);
+        }
+      }
+    } catch (error) { }
+  };
+
+  useEffect(() => {
+    RestaurantListAPI();
+  }, [check]);
+
+  const handleChange = (e) => {
+    setResId(e.target.value)
+    console.log("ResId", resId)
+  };
+  const handleClear = () => {
+    setSelectedRestaurantOption("")
+    setSelectedAddressOption("")
+    seInput({
+      restaurantAddress: "",
+      restaurantName: ""
+    })
+    setValue({
+      parsedData: "",
+      nameStartWith: "",
+      nameEndWith: "",
+      namestartFrom: "",
+      nameendFrom: "",
+      namelineNumber: "",
+      addressStartWith: "",
+      addressEndWith: "",
+      addressstartFrom: "",
+      addressendFrom: "",
+      addresslineNumber: "",
+    })
+    setResponseData(
+      {
+        profileImage: '',
+        stateCode: '',
+        name: '',
+        lattitude: 0,
+        longitude: 0,
+        address: '',
+        receiptAddress: '',
+        state: '',
+        city: '',
+
+      }
+    )
+  }
+
+  const handleSearchFilter = (e) => {
+    const { name, value } = e.target;
+    setFilter((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleResCreate = async () => {
+    console.log("Submiting");
+
+    try {
+      console.log("Submiting try block");
+      setLoader(true)
+      const apiResponse = await callAPI(apiUrls.resturentCreate, {}, "POST", responseData);
+      console.log("apiResponse ", apiResponse)
+      if (apiResponse?.data?.status) {
+        SuccessMessage(apiResponse?.data?.message)
+        handleClear()
+      } else {
+        ErrorMessage(apiResponse?.data?.message);
+      }
+      setLoader(false);
+    }
+    catch (error) {
+      setLoader(false);
+      ErrorMessage(error?.message);
+    }
+  }
+
   const handleMenuValueChange = (index, event) => {
     const { name, value } = event.target;
     const updatedValues = [...menuValue];
@@ -78,9 +194,11 @@ export default function Index() {
   };
 
   useEffect(() => {
-    menuRef.current = menuInput;
-    console.log("Updated Menu value: ", menuRef.current);
-  }, [menuInput]);
+    // console.log("ResData: ", responseData)
+    // console.log("MenuValue: ", menuValue)
+    resDataRef.current = responseData;
+    console.log("Updated Menu ResData: ", resDataRef.current);
+  }, [responseData]);
 
   const ParseMenuData = async (index) => {
     const hasValue = Object.values(menuValue[index]).some((val) => val.trim() !== "");
@@ -108,7 +226,6 @@ export default function Index() {
       }
       const apiResponse = await callAPI(apiUrls.menuParser, {}, "POST", data);
       if (apiResponse?.data?.status) {
-        // console.log("apiResponse ", apiResponse);
         const updatedInputs = [...menuInput];
         updatedInputs[index] = {
           ...updatedInputs[index],
@@ -116,7 +233,6 @@ export default function Index() {
           description: apiResponse?.data?.data?.menuDescription,
         };
         setMenuInput(updatedInputs);
-        // console.log("Menu value ", menuInput)
         SuccessMessage(apiResponse?.data?.message);
       } else {
         ErrorMessage(apiResponse?.data?.message);
@@ -138,10 +254,9 @@ export default function Index() {
     try {
       setLoader(true);
       const apiResponse = await callAPI(apiUrls.reciptMenuParserAdmin, {}, "POST", { images: path })
-      // console.log("apiResponse ", apiResponse)
       if (apiResponse?.data?.status) {
         setParseData((prev) => [...prev, ...apiResponse?.data?.data]);
-        // console.log("ParseData ", parseData);
+        setCheck(true)
         setImgArr([])
         SuccessMessage(apiResponse?.data?.message);
       } else {
@@ -162,6 +277,27 @@ export default function Index() {
       const path = await PostImage(file);
       if (path?.length > 0) {
         Serviceadd(path[0]);
+      }
+      e.target.value = null;
+    } else {
+      ErrorMessage("Invalid file Format");
+      e.target.value = null;
+      return false;
+    }
+  };
+
+  const UploadProfilePic = async (e, allowedFileTypes) => {
+    let file = e?.target?.files[0];
+    if (
+      allowedFileTypes.includes(file?.type) ||
+      allowedFileTypes.includes(file?.name?.split(".").reverse()[0])
+    ) {
+      const path = await PostImage(file);
+
+      if (path?.length > 0) {
+        console.log("Path ", path)
+        setResponseData((val) => ({ ...val, profileImage: path[0] }))
+        SuccessMessage("Profile pic uploaded successfully")
       }
       e.target.value = null;
     } else {
@@ -215,7 +351,6 @@ export default function Index() {
           data.namelineNumber = value.namelineNumber;
         }
       }
-
       if (selectedAddressOption) {
         if (selectedAddressOption === "startWith") {
           data.addressStartWith = value.addressStartWith;
@@ -228,7 +363,6 @@ export default function Index() {
           data.addresslineNumber = value.addresslineNumber;
         }
       }
-
       const apiResponse = await callAPI(
         apiUrls.restaurantParser,
         {},
@@ -239,6 +373,9 @@ export default function Index() {
         seInput((val) => {
           return { ...val, restaurantAddress: apiResponse?.data?.data.restaurantAddress, restaurantName: apiResponse?.data?.data.restaurantName };
         });
+        SuccessMessage(apiResponse?.data?.message);
+        handleAddress(apiResponse?.data?.data.restaurantAddress, apiResponse?.data?.data.restaurantName)
+        setResponseData((val) => ({ ...val, receiptAddress: apiResponse?.data?.data.restaurantAddress, address: apiResponse?.data?.data.restaurantAddress, name: apiResponse?.data?.data.restaurantName }));
       } else {
         ErrorMessage(apiResponse?.data?.message);
         seInput((val) => {
@@ -255,6 +392,36 @@ export default function Index() {
     }
   };
 
+  const handleAddress = async (address, name) => {
+    console.log("address ", address)
+    try {
+      const results = await geocodeByAddress(address);
+      console.log("results ", results);
+
+      const latLng = await getLatLng(results[0]);
+      setResponseData((val) => ({
+        ...val,
+        lattitude: latLng?.lat,
+        longitude: latLng?.lng,
+        postal_code: results[0]?.address_components[results[0]?.address_components?.length - 1]?.short_name,
+        state: results[0]?.address_components[results[0]?.address_components?.length - 2]?.long_name,
+        stateCode: results[0]?.address_components[results[0]?.address_components?.length - 2]?.long_name.slice(0, 2).toUpperCase(),
+        city: results[0]?.address_components[results[0]?.address_components?.length - 3]?.long_name,
+        name: input.restaurantName ? input.restaurantName : name,
+        address: results[0].formatted_address,
+        receiptAddress: results[0].formatted_address,
+
+      }))
+      // console.log("resDara ", responseData)
+      setLatLong({
+        coordinates: [latLng?.lng, latLng?.lat],
+        type: "Point",
+      });
+    } catch (error) {
+      console.error("Error fetching latitude and longitude:", error);
+    }
+  }
+
   const labels = {
     startWith: "Start With",
     endWith: "End With",
@@ -264,7 +431,6 @@ export default function Index() {
 
   const renderInputField = (selectedOption, type) => {
     if (!selectedOption) return null;
-    // Determine key prefix based on type (name or address)
     const prefix = type === "name" ? "name" : "address";
     if (selectedOption === "chef") {
       const fieldName = prefix + "lineNumber";
@@ -483,10 +649,8 @@ export default function Index() {
     return null;
   };
 
-  // console.log(value);
   return (
     <div id="page-container" className="page_contclass">
-      {/* Top Title Section */}
       <div className="top-title-sec d-flex align-items-center justify-content-between mb-30">
         <h1 className="heading24 mb-0">Upload Restaurant</h1>
         <nav aria-label="breadcrumb">
@@ -505,6 +669,52 @@ export default function Index() {
       <div className="inner-main-content">
         <div className="resturant-upload-top mb-30">
           <div className="upload-btn-sec d-flex justify-content-end gap-3 align-items-center">
+            {/* <div>
+              <label className="startDate mt-2">Restaurants</label>
+              <select
+                name="restaurant"
+                className="form-control"
+                value={filter.restaurant}
+                onChange={handleSearchFilter}
+              >
+                <option value="">All Cities</option>
+                {restaurants.map((restaurant, i) => (
+                  <option key={i} value={restaurant}>
+                    {restaurant}
+                  </option>
+                ))}
+              </select>
+            </div> */}
+            <div>
+              {responseData.profileImage && (
+                <img src={defaultConfig.imagePath + responseData.profileImage} alt="" style={{ height: '75px', width: '75px', borderRadius: '50%' }} />
+              )}
+            </div>
+            <div className="upload-btn-resturant">
+              <button className="creatbtn">
+                <svg
+                  width={24}
+                  height={24}
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    d="M11 16V7.85L8.4 10.45L7 9L12 4L17 9L15.6 10.45L13 7.85V16H11ZM6 20C5.45 20 4.97917 19.8042 4.5875 19.4125C4.19583 19.0208 4 18.55 4 18V15H6V18H18V15H20V18C20 18.55 19.8042 19.0208 19.4125 19.4125C19.0208 19.8042 18.55 20 18 20H6Z"
+                    fill="#fff"
+                  />
+                </svg>
+                Restaurant Profile Pic
+              </button>
+              <input
+                type="file"
+                name="restaurantFile"
+                accept="image/png,image/jpg,image/jpeg"
+                onChange={(e) => {
+                  UploadProfilePic(e, ["image/png", "image/jpg", "image/jpeg"]);
+                }}
+              />
+            </div>
             {/* Upload Buttons */}
             <div className="upload-btn-resturant">
               <button className="creatbtn">
@@ -565,6 +775,7 @@ export default function Index() {
             <div className="row">
               {/* Left Form */}
               <div className="col-lg-8">
+
                 <div className="tablecard h-100">
                   <div className="tableheader d-flex align-items-center justify-content-between boderbtn">
                     <h2 className="mb-0">Restaurant Detail</h2>
@@ -575,7 +786,10 @@ export default function Index() {
                       <div className="col-lg-5 mb-3">
                         <div className="form-group">
                           <h6>Restaurant Name</h6>
-                          <input type="text" className="form-control" value={input?.restaurantName} />
+                          <input type="text" className="form-control" value={input.restaurantName} onChange={(e) => {
+                            seInput((prev) => ({ ...prev, restaurantName: e.target.value }))
+                            setResponseData((val) => ({ ...val, name: e.target.value }));
+                          }} />
                         </div>
                       </div>
                       {/* Restaurant Radio Buttons */}
@@ -611,8 +825,64 @@ export default function Index() {
                       {/* Address */}
                       <div className="col-lg-5 mb-3">
                         <div className="form-group">
-                          <h6>Address</h6>
-                          <input type="text" className="form-control" value={input?.restaurantAddress} />
+                          {/* <h6>Address</h6>
+                          <input type="text" className="form-control" value={input?.restaurantAddress} onChange={(e) => {
+                            seInput((prev) => ({ ...prev, restaurantAddress: e.target.value }))
+                            console.log("val ", input)
+                            }} /> */}
+
+                          <div className="col-lg-12 col-md-6 col-12 mb-3">
+                            <label htmlFor="">Address </label>
+                            <PlacesAutocomplete
+                              value={responseData.address}
+                              onChange={(address) => {
+                                setAddress(address)
+                                seInput((val) => ({ ...val, restaurantAddress: address }))
+                                setResponseData((val) => ({ ...val, address, receiptAddress: address }));
+                              }}
+                              onSelect={handleAddress}
+                            >
+                              {({
+                                getInputProps,
+                                suggestions,
+                                getSuggestionItemProps,
+                                loading,
+                              }) => (
+                                <div>
+                                  <input
+                                    {...getInputProps({ placeholder: "Type address" })}
+                                    className="form-control"
+                                  />
+                                  <div>
+                                    {loading && <div>Loading...</div>}
+                                    {suggestions.map((suggestion) => {
+                                      const style = {
+                                        backgroundColor: suggestion.active
+                                          ? "#41b6e6"
+                                          : "#fff",
+                                      };
+                                      return (
+                                        <div
+                                          {...getSuggestionItemProps(suggestion, {
+                                            style,
+                                          })}
+                                        >
+                                          {suggestion.description}
+                                        </div>
+                                      );
+                                    })}
+                                  </div>
+                                </div>
+                              )}
+                            </PlacesAutocomplete>
+                            <div className="error">
+                              {simpleValidator.current.message(
+                                "Address",
+                                input.restaurantAddress,
+                                "required"
+                              )}
+                            </div>
+                          </div>
                         </div>
                       </div>
                       {/* Address Radio Buttons */}
@@ -642,9 +912,13 @@ export default function Index() {
                       <div className="col-lg-12 mb-3">
                         {renderInputField(selectedAddressOption, "address")}
                       </div>
-                      <div className="btndiv d-flex align-items-center gap-3 justify-content-start mt-30 ps-3">
+
+                      <div className="btndiv d-flex align-items-center gap-3 justify-content-start mt-30 ps-3" >
                         <Link to="#" className="btndarkblue" onClick={ParseName}>
                           Review
+                        </Link>
+                        <Link to="#" className="btndarkblue" onClick={handleResCreate}>
+                          Submit
                         </Link>
                       </div>
                     </div>
@@ -673,6 +947,28 @@ export default function Index() {
             </div>
           </div>
         </div>
+        {check == true && (<div className="col-lg-12 col-md-12 col-12 mb-3">
+          <label htmlFor="">Select Restaurant *</label>
+          <select
+            className="form-select"
+            aria-label="Default select example"
+            onChange={handleChange}
+            value={resId}
+            name="restaurantId"
+          >
+            <option value="">Select</option>
+            {logoList?.map((val, i) => (
+              <option value={val._id} key={i}>{val.name}</option>
+            ))}
+          </select>
+          <div className="error">
+            {simpleValidator.current.message(
+              "restaurant name",
+              resId,
+              `required`
+            )}
+          </div>
+        </div>)}
 
         {/* Menu Section */}
         {parseData.map((line, index) => (
@@ -681,6 +977,7 @@ export default function Index() {
               <div className="row">
                 <div className="col-lg-8">
                   <div className="tablecard h-100">
+
                     <div className="tableheader d-flex align-items-center justify-content-between boderbtn">
                       <h2 className="mb-0">Menu Item Detail</h2>
                     </div>
@@ -714,7 +1011,8 @@ export default function Index() {
                         </div>
                         <div className="col-lg-12 mb-3">
                           {/* <div id="dynamicInputContainerItem" /> */}
-                          {renderInputFieldMenu(selectedMenuOption[index], "name", index)}                        </div>
+                          {renderInputFieldMenu(selectedMenuOption[index], "name", index)}
+                        </div>
                       </div>
                       <div className="row align-items-center">
                         <div className="col-lg-5 mb-3">

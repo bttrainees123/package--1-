@@ -91,11 +91,19 @@ export default function AddandEditMenu({
     }
   }
 
-  // const handleZero = () => {
-  //   handleValueChange("isFakeHeart", 0);
-  //   handleValueChange("isFakeLike", 0);
-  // }
-
+  const handleFilterSuggestions = (query, suggestions) => {
+    if (!query) return suggestions;
+    const queryWords = query.toLowerCase().split(" ");
+    const filteredSuggestions = suggestions.filter((suggestion) => {
+      const suggestionWords = suggestion.text.toLowerCase().split(" ");
+      return queryWords.every((queryWord) =>
+        suggestionWords.some((suggestionWord) =>
+          suggestionWord.startsWith(queryWord)
+        )
+      );
+    });
+    return filteredSuggestions;
+  };
   const handleValueChange = (name, value) => {
     if (name === "points") {
       console.log(name, value);
@@ -212,7 +220,6 @@ export default function AddandEditMenu({
     const updatedTags = value.tags.filter((_, index) => index !== i);
     handleValueChange("tags", updatedTags);
   };
-
 
   // Handle adding a new tag
   const handleAddition = (tag) => {
@@ -615,7 +622,6 @@ export default function AddandEditMenu({
                   </div>
                   <div className="col-lg-12 col-md-12 col-12 mb-3">
                     <label htmlFor="">Tags</label>
-
                     <ReactTags
                       tags={
                         action === "edit"
@@ -628,7 +634,9 @@ export default function AddandEditMenu({
                       handleDelete={handleDelete}
                       handleAddition={handleAddition}
                       delimiters={[KeyCodes.comma, KeyCodes.enter]}
+                      handleFilterSuggestions={handleFilterSuggestions}
                       placeholder="Type and press Enter..."
+                      minQueryLength={1}
                     />
                   </div>
                   <div className="col-lg-12 col-md-12 col-12 mb-3">

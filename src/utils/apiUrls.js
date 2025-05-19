@@ -15,6 +15,7 @@ export const apiUrls = {
     approveRejectReview: "admin/approveRejectReview",
     reviewHistory: "admin/reviewHistory",
     deleteReviewById: "admin/deleteReviewById",
+    resturentCreate: "admin/restaurantCreate",
     //user
     userLists: "admin/userLists",
     updateUser: "admin/updateUser",
