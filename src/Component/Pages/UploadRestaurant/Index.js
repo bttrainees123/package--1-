@@ -11,23 +11,24 @@ import { apiUrls } from "../../../utils/apiUrls";
 import { defaultConfig } from "../../../config";
 import PlacesAutocomplete, { geocodeByAddress, getLatLng } from "react-places-autocomplete";
 import SimpleReactValidator from "simple-react-validator";
+import { WithContext as ReactTags } from "react-tag-input";
 
 export default function Index() {
   const [selectedRestaurantOption, setSelectedRestaurantOption] = useState("");
   const [selectedAddressOption, setSelectedAddressOption] = useState("");
   const [selectedMenuOption, setSelectedMenuOption] = useState([])
   const [selectedMenuDescriptionOption, setSelectedMenuDescriptionOption] = useState([]);
+  const [selectedMenuTag, setSelectedMenuTag] = useState([]);
   const [loader, setLoader] = useState(false);
   const [pathArr, setPathArr] = useState([])
   const [imgArr, setImgArr] = useState([])
   const [address, setAddress] = useState("");
   const [check, setCheck] = useState(false)
+  const [catCheck, setCatCheck] = useState(false)
   const simpleValidator = useRef(new SimpleReactValidator());
-  const [filter, setFilter] = useState({
-    restaurant: ""
-  });
+  const [ind, setInd] = useState(0);
   const [resId, setResId] = useState('')
-  const [parseData, setParseData] = useState([])
+  const [parseData, setParseData] = useState(["12:34 BBM ONOV 40\n< Bao Boss\nMay 13, 2024 - 6:57 PM - Completed\nOrder Complete\n> Q a & a\nHow was your order?\nReview Store wW Ww Ww Ww Ww\nNeed help with your order?\nIf you are missing an item or something\nisn't right, we'll help you take care of it.\nGet Help\nOrder details\n1x $35 Meal Pack $38.05\nBirria Baguette, Tots - sm, Kruben, Tots -\nsm\nSubtotal $38.05\nEstimated Tax  $2.64\nDiscount -$11.42\nTotal $29.27\n4  SB"])
   const [responseData, setResponseData] = useState(
     {
       profileImage: '',
@@ -42,6 +43,16 @@ export default function Index() {
 
     }
   )
+
+  const [menuData, setMenuData] = useState([
+    {
+      category: "",
+      restaurantId: "",
+      itemname: "",
+      description: "",
+      tags: [],
+    }
+  ])
   const [menuValue, setMenuValue] = useState([{
     parsedData: "",
     nameStartWith: '',
@@ -78,19 +89,70 @@ export default function Index() {
     itemName: "",
     description: ""
   }])
+  const [cat, setCat] = useState([]);
+  const [catId, setCatId] = useState('')
   const [latLong, setLatLong] = useState({
     coordinates: [0, 0],
     type: "Point",
   });
   const menuRef = useRef(menuInput)
   const resDataRef = useRef(responseData)
-  const handleChangemap = (address) => {
-    setResponseData((val) => ({
-      ...val,
-      address: address,
-    }))
-    seInput((val) => ({ ...val, restaurantAddress: address }));
+
+  const CatListAPI = async () => {
+    try {
+      let query = {
+        restaurantId: resId,
+      };
+      const apiResponse = await callAPI(
+        apiUrls.categoryListOfRestaurant,
+        query,
+        "GET"
+      );
+      console.log("Response ", apiResponse)
+      if (apiResponse?.data?.status === true) {
+        if (apiResponse?.data?.data?.length > 0) {
+          setCat(apiResponse?.data?.data);
+          setCatCheck(true)
+        } else {
+          setCat([]);
+        }
+      } else {
+        ErrorMessage(apiResponse?.data?.message);
+      }
+    } catch (error) {
+      ErrorMessage(error?.message);
+    }
   };
+  useEffect(() => {
+    CatListAPI();
+  }, [resId]);
+
+  const handleAddition = (index, tag) => {
+    const tagsList = menuData[index]?.tags;
+    tagsList.push(tag);
+    handleValueChange("tags", tagsList, index);
+  }
+  const handleDelete = (i, index) => {
+    const updatedTags = value.tags.filter((_, index) => index !== i);
+    handleValueChange("tags", updatedTags, index);
+  };
+  const handleValueChange = (name, value, index) => {
+    setMenuData((detail) => {
+      return { ...detail, [name]: value };
+    });
+    const newData = [...menuData];
+    newData[index] = {
+      ...newData[index],
+      name: value
+    }
+    setMenuData(newData)
+  };
+
+  const KeyCodes = {
+    comma: 188,
+    enter: 13,
+  };
+
   const handleMultipleMenu = async (e) => {
     const files = Array.from(e.target.files);
     const updatedImgArr = [...imgArr, ...files];
@@ -121,7 +183,17 @@ export default function Index() {
 
   const handleChange = (e) => {
     setResId(e.target.value)
-    console.log("ResId", resId)
+    menuData.forEach(obj => {
+      obj["restaurantId"] = resId;
+    });
+    console.log("ResId", menuData)
+  };
+  const handleCatChange = (e) => {
+    setCatId(e.target.value)
+    menuData.forEach(obj => {
+      obj["category"] = catId;
+    });
+    console.log("catName", menuData)
   };
   const handleClear = () => {
     setSelectedRestaurantOption("")
@@ -207,6 +279,10 @@ export default function Index() {
       setLoader(true);
       const data = { parsedData: parseData[index] };
       const menuOpt = selectedMenuOption[index];
+      menuData.forEach(obj => {
+        obj["restaurantId"] = resId;
+        obj["category"] = catId;
+      });
       if (menuOpt) {
         if (menuOpt === "startWith") data.nameStartWith = menuValue[index].nameStartWith;
         else if (menuOpt === "endWith") data.nameEndWith = menuValue[index].nameEndWith;
@@ -233,6 +309,16 @@ export default function Index() {
           description: apiResponse?.data?.data?.menuDescription,
         };
         setMenuInput(updatedInputs);
+        const newData = [...menuData];
+        newData[index] = {
+          ...newData[index],
+          category: catId || "",
+          restaurantId: resId || "",
+          itemname: apiResponse?.data?.data?.menuName || "",
+          description: apiResponse?.data?.data?.menuDescription || "",
+        }
+        setMenuData(newData)
+        console.log("Menu Res Data: ", menuData)
         SuccessMessage(apiResponse?.data?.message);
       } else {
         ErrorMessage(apiResponse?.data?.message);
@@ -263,6 +349,28 @@ export default function Index() {
         ErrorMessage(apiResponse?.data?.message);
       } setLoader(false);
     } catch (error) {
+      setLoader(false);
+      ErrorMessage(error?.message);
+    }
+  }
+
+  const handleMenuCreate = async () => {
+    console.log("Submiting");
+
+    try {
+      console.log("Submiting try block");
+      setLoader(true)
+      const apiResponse = await callAPI(apiUrls.menuCreate, {}, "POST", { menuData: menuData });
+      console.log("apiResponse ", apiResponse)
+      if (apiResponse?.data?.status) {
+        SuccessMessage(apiResponse?.data?.message)
+        handleClear()
+      } else {
+        ErrorMessage(apiResponse?.data?.message);
+      }
+      setLoader(false);
+    }
+    catch (error) {
       setLoader(false);
       ErrorMessage(error?.message);
     }
@@ -947,28 +1055,53 @@ export default function Index() {
             </div>
           </div>
         </div>
-        {check == true && (<div className="col-lg-12 col-md-12 col-12 mb-3">
-          <label htmlFor="">Select Restaurant *</label>
-          <select
-            className="form-select"
-            aria-label="Default select example"
-            onChange={handleChange}
-            value={resId}
-            name="restaurantId"
-          >
-            <option value="">Select</option>
-            {logoList?.map((val, i) => (
-              <option value={val._id} key={i}>{val.name}</option>
-            ))}
-          </select>
-          <div className="error">
-            {simpleValidator.current.message(
-              "restaurant name",
-              resId,
-              `required`
-            )}
-          </div>
-        </div>)}
+        <div className="row">
+          {check && (<div className="col-lg-12 col-md-12 col-12 mb-3" style={{ width: '200px' }}>
+            <label htmlFor="">Select Restaurant *</label>
+            <select
+              className="form-select"
+              aria-label="Default select example"
+              onChange={handleChange}
+              value={resId}
+              name="restaurantId"
+            >
+              <option value="">Select</option>
+              {logoList?.map((val, i) => (
+                <option value={val._id} key={i}>{val.name}</option>
+              ))}
+            </select>
+            <div className="error">
+              {simpleValidator.current.message(
+                "restaurant name",
+                resId,
+                `required`
+              )}
+            </div>
+          </div>)}
+          {catCheck && (<div className="col-lg-12 col-md-12 col-12 mb-3" style={{ width: '200px' }}>
+            <label htmlFor="">Select Category *</label>
+            <select
+              className="form-select"
+              aria-label="Default select example"
+              onChange={handleCatChange}
+              value={catId}
+              name="category"
+            >
+              <option value="">Select</option>
+              {cat?.map((val, i) => (
+                <option value={val._id} key={i}>{val.name}</option>
+              ))}
+            </select>
+            <div className="error">
+              {simpleValidator.current.message(
+                "category name",
+                catId,
+                `required`
+              )}
+            </div>
+          </div>)}
+        </div>
+
 
         {/* Menu Section */}
         {parseData.map((line, index) => (
@@ -986,7 +1119,23 @@ export default function Index() {
                         <div className="col-lg-5 mb-3">
                           <div className="form-group">
                             <h6>Item Name</h6>
-                            <input type="text" className="form-control" value={menuInput[index]?.itemName || ""} />
+                            <input type="text" className="form-control" value={menuInput[index]?.itemName || ""} onChange={(e) => {
+                              const updatedInputs = [...menuInput];
+                              updatedInputs[index] = {
+                                ...updatedInputs[index],
+                                itemName: e.target.value
+                              };
+                              setMenuInput(updatedInputs);
+                              const newData = [...menuData];
+                              newData[index] = {
+                                ...newData[index],
+                                category: catId || "",
+                                restaurantId: resId || "",
+                                itemname: e.target.value,
+                              }
+                              setMenuData(newData)
+                              console.log("-----MenuData ", menuData)
+                            }} />
                           </div>
                         </div>
                         <div className="col-lg-7 mt-2">
@@ -1018,7 +1167,23 @@ export default function Index() {
                         <div className="col-lg-5 mb-3">
                           <div className="form-group">
                             <h6>Description</h6>
-                            <input type="text" className="form-control" value={menuInput[index]?.description || ""} />
+                            <input type="text" className="form-control" value={menuInput[index]?.description || ""} onChange={(e) => {
+                              const updatedInputs = [...menuInput];
+                              updatedInputs[index] = {
+                                ...updatedInputs[index],
+                                description: e.target.value
+                              };
+                              setMenuInput(updatedInputs)
+                              const newData = [...menuData];
+                              newData[index] = {
+                                ...newData[index],
+                                category: catId || "",
+                                restaurantId: resId || "",
+                                description: e.target.value,
+                              }
+                              setMenuData(newData)
+                              console.log("-----MenuData1 ", menuData)
+                            }} />
                           </div>
                         </div>
                         <div className="col-lg-7 mt-2">
@@ -1046,6 +1211,72 @@ export default function Index() {
                         <div className="col-lg-12 mb-3">
                           {/* <div id="dynamicInputContainerDescription" /> */}
                           {renderInputFieldMenu(selectedMenuDescriptionOption[index], "description", index)}                        </div>
+
+                      </div>
+                      <div className="row align-items-center">
+                        <div className="col-lg-5 mb-3">
+                          <div className="form-group">
+                            <h6>Tags</h6>
+                            <ReactTags
+                              // tags={
+                              //   action === "edit"
+                              //     ? Array.isArray(value?.tags)
+                              //       ? value?.tags.map((text) => ({ id: text, text }))
+                              //       : []
+                              //     : value?.tags
+                              // }
+                              // suggestions={suggestions}
+                              handleDelete={(e) => handleDelete(index)}
+                              handleAddition={(e) => handleAddition(tag, index)}
+                              delimiters={[KeyCodes.comma, KeyCodes.enter]}
+                              // handleFilterSuggestions={handleFilterSuggestions}
+                              placeholder="Type and press Enter..."
+                              minQueryLength={1}
+                            />
+                            {/* <input type="text" className="form-control" value={menuInput[index]?.description || ""} onChange={(e) => {
+                              const updatedInputs = [...menuInput];
+                              updatedInputs[index] = {
+                                ...updatedInputs[index],
+                                description: e.target.value
+                              };
+                              setMenuInput(updatedInputs)
+                              const newData = [...menuData];
+                              newData[index] = {
+                                ...newData[index],
+                                category: catId || "",
+                                restaurantId: resId || "",
+                                tags: e.target.value,
+                              }
+                              setMenuData(newData)
+                              console.log("-----MenuData1 ", menuData)
+                            }} /> */}
+                          </div>
+                        </div>
+                        <div className="col-lg-7 mt-2">
+                          <div className="d-flex gap-3 resturant-radio-btn">
+                            {Object.entries(labels).map(([key, label]) => (
+                              <div key={key} className="d-flex gap-2 align-items-center">
+                                <label htmlFor="tags1">
+                                  {label}
+                                </label>
+                                <input
+                                  className="form-check-input"
+                                  type="radio"
+                                  name={`menuTagOption_${index}`}
+                                  value={key}
+                                  checked={selectedMenuTag[index] === key}
+                                  onChange={(e) => {
+                                    const updated = [...selectedMenuTag];
+                                    updated[index] = e.target.value;
+                                    setSelectedMenuTag(updated);
+                                  }}
+                                />{" "}
+                              </div>))}
+                          </div>
+                        </div>
+                        <div className="col-lg-12 mb-3">
+                          {/* <div id="dynamicInputContainerDescription" /> */}
+                          {renderInputFieldMenu(selectedMenuTag[index], "tags", index)}                        </div>
                         <div className="btndiv d-flex align-items-center gap-3 justify-content-start mt-30 ps-3">
                           <Link to="#" className="btndarkblue" onClick={(e) => ParseMenuData(index)}>
                             Review
@@ -1071,7 +1302,7 @@ export default function Index() {
           </div>
         ))}
         <div className="btndiv d-flex align-items-center gap-3 justify-content-start mt-30 ps-3">
-          <Link to="#" className="btndarkblue" onClick={ParseMenuData}>
+          <Link to="#" className="btndarkblue" onClick={handleMenuCreate}>
             Submit
           </Link>
           <Link to="#" className="btndarkblue-outline">
