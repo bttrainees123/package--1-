@@ -5,7 +5,7 @@ import {
   ErrorMessage,
   SuccessMessage,
 } from "../../../helpers/common";
-import { PostImage, PostImageMultiple } from "../../../utils/apiCall";
+import { PostImage, PostImageMultiple, PostImageMultipleMenu } from "../../../utils/apiCall";
 import { callAPI } from "../../../utils/apiUtils";
 import { apiUrls } from "../../../utils/apiUrls";
 import { defaultConfig } from "../../../config";
@@ -22,37 +22,32 @@ export default function Index() {
   const [loader, setLoader] = useState(false);
   const [pathArr, setPathArr] = useState([])
   const [imgArr, setImgArr] = useState([])
+  const [imgArrMenu, setImgArrMenu] = useState([])
   const [address, setAddress] = useState("");
   const [check, setCheck] = useState(false)
   const [catCheck, setCatCheck] = useState(false)
-  const simpleValidator = useRef(new SimpleReactValidator());
-  const [ind, setInd] = useState(0);
   const [resId, setResId] = useState('')
-  const [parseData, setParseData] = useState(["12:34 BBM ONOV 40\n< Bao Boss\nMay 13, 2024 - 6:57 PM - Completed\nOrder Complete\n> Q a & a\nHow was your order?\nReview Store wW Ww Ww Ww Ww\nNeed help with your order?\nIf you are missing an item or something\nisn't right, we'll help you take care of it.\nGet Help\nOrder details\n1x $35 Meal Pack $38.05\nBirria Baguette, Tots - sm, Kruben, Tots -\nsm\nSubtotal $38.05\nEstimated Tax  $2.64\nDiscount -$11.42\nTotal $29.27\n4  SB"])
-  const [responseData, setResponseData] = useState(
-    {
-      profileImage: '',
-      stateCode: '',
-      name: '',
-      lattitude: 0,
-      longitude: 0,
-      address: '',
-      receiptAddress: '',
-      state: '',
-      city: '',
-
-    }
-  )
-
-  const [menuData, setMenuData] = useState([
-    {
-      category: "",
-      restaurantId: "",
-      itemname: "",
-      description: "",
-      tags: [],
-    }
-  ])
+  const [parseData, setParseData] = useState([])
+  const [menuPath, setMenuPath] = useState([])
+  const [responseData, setResponseData] = useState({
+    profileImage: '',
+    stateCode: '',
+    name: '',
+    lattitude: 0,
+    longitude: 0,
+    address: '',
+    receiptAddress: '',
+    state: '',
+    city: '',
+  })
+  const [menuData, setMenuData] = useState([{
+    category: "",
+    restaurantId: "",
+    itemname: "",
+    description: "",
+    tags: [],
+    img: [],
+  }])
   const [menuValue, setMenuValue] = useState([{
     parsedData: "",
     nameStartWith: '',
@@ -64,7 +59,12 @@ export default function Index() {
     descriptionEndWith: '',
     descriptionstartFrom: '',
     descriptionendFrom: '',
-    descriptionlineNumber: ''
+    descriptionlineNumber: '',
+    tagsStartWith: '',
+    tagsEndWith: '',
+    tagsstartFrom: '',
+    tagsendFrom: '',
+    tagslineNumber: '',
   }])
   const [value, setValue] = useState({
     parsedData: "",
@@ -80,23 +80,44 @@ export default function Index() {
     addresslineNumber: "",
   });
   const [logoList, setLogoList] = useState([]);
-
+  const [TagsData, setTagsData] = useState([]);
   const [input, seInput] = useState({
     restaurantAddress: "",
     restaurantName: ""
   });
   const [menuInput, setMenuInput] = useState([{
     itemName: "",
-    description: ""
+    description: "",
+    tags: [],
+    category: "",
   }])
   const [cat, setCat] = useState([]);
-  const [catId, setCatId] = useState('')
-  const [latLong, setLatLong] = useState({
-    coordinates: [0, 0],
-    type: "Point",
-  });
-  const menuRef = useRef(menuInput)
+  // const [catId, setCatId] = useState('')
+
+  const suggestions = TagsData?.map((tag) => ({
+    id: tag._id,
+    text: tag.tag,
+  })) || [];
+
   const resDataRef = useRef(responseData)
+
+  const tagApi = async () => {
+    try {
+      let query = {};
+      const apiResponse = await callAPI(apiUrls.tagList, query, "GET");
+      if (apiResponse?.data?.status === true) {
+        if (apiResponse?.data?.data?.length > 0) {
+          setTagsData(apiResponse.data.data);
+        } else {
+          setTagsData([]);
+        }
+      } else {
+        ErrorMessage(apiResponse?.data?.message);
+      }
+    } catch (error) {
+      ErrorMessage(error?.message);
+    }
+  };
 
   const CatListAPI = async () => {
     try {
@@ -108,7 +129,6 @@ export default function Index() {
         query,
         "GET"
       );
-      console.log("Response ", apiResponse)
       if (apiResponse?.data?.status === true) {
         if (apiResponse?.data?.data?.length > 0) {
           setCat(apiResponse?.data?.data);
@@ -123,29 +143,41 @@ export default function Index() {
       ErrorMessage(error?.message);
     }
   };
+
   useEffect(() => {
-    CatListAPI();
+    if (resId) {
+      setCatCheck(false)
+      CatListAPI();
+      tagApi();
+    }
   }, [resId]);
 
   const handleAddition = (index, tag) => {
-    const tagsList = menuData[index]?.tags;
-    tagsList.push(tag);
+    const tagsList = menuData[index]?.tags || [];
+    tagsList.push(tag?.text);
     handleValueChange("tags", tagsList, index);
   }
-  const handleDelete = (i, index) => {
-    const updatedTags = value.tags.filter((_, index) => index !== i);
+
+  const handleDelete = (index, i) => {
+    const updatedTags = menuData[index]?.tags.filter((_, index) => index !== i);
     handleValueChange("tags", updatedTags, index);
   };
+
   const handleValueChange = (name, value, index) => {
-    setMenuData((detail) => {
-      return { ...detail, [name]: value };
+    const updatedMenuData = [...menuData];
+    updatedMenuData[index] = {
+      ...updatedMenuData[index],
+      [name]: value
+    };
+    setMenuData(updatedMenuData);
+    setMenuInput((prev) => {
+      const updatedInputs = [...prev];
+      updatedInputs[index] = {
+        ...updatedInputs[index],
+        [name]: value
+      };
+      return updatedInputs;
     });
-    const newData = [...menuData];
-    newData[index] = {
-      ...newData[index],
-      name: value
-    }
-    setMenuData(newData)
   };
 
   const KeyCodes = {
@@ -161,6 +193,15 @@ export default function Index() {
     pathArr.push(...path);
     setPathArr(pathArr);
     if (path?.length > 0) handleMultiplePath(path);
+    e.target.value = null;
+  };
+
+  const handleMultipleMenuList = async (e) => {
+    const files = Array.from(e.target.files);
+    const updatedImgArr = [...imgArrMenu, ...files];
+    setImgArrMenu(updatedImgArr);
+    const path = await PostImageMultipleMenu(updatedImgArr);
+    setMenuPath(path);
     e.target.value = null;
   };
 
@@ -180,21 +221,28 @@ export default function Index() {
   useEffect(() => {
     RestaurantListAPI();
   }, [check]);
-
   const handleChange = (e) => {
     setResId(e.target.value)
     menuData.forEach(obj => {
-      obj["restaurantId"] = resId;
+      obj["restaurantId"] = e.target.value;
     });
-    console.log("ResId", menuData)
   };
-  const handleCatChange = (e) => {
-    setCatId(e.target.value)
-    menuData.forEach(obj => {
-      obj["category"] = catId;
-    });
-    console.log("catName", menuData)
+
+  const handleCatChange = (e, i) => {
+    const updatedCatList = [...menuData]
+    updatedCatList[i] = {
+      ...updatedCatList[i],
+      [e.target.name]: e.target.value
+    }
+    setMenuData(updatedCatList)
+    const newData = [...menuInput];
+    newData[i] = {
+      ...menuData[i],
+      [e.target.name]: e.target.value
+    }
+    setMenuInput(newData)
   };
+
   const handleClear = () => {
     setSelectedRestaurantOption("")
     setSelectedAddressOption("")
@@ -215,35 +263,23 @@ export default function Index() {
       addressendFrom: "",
       addresslineNumber: "",
     })
-    setResponseData(
-      {
-        profileImage: '',
-        stateCode: '',
-        name: '',
-        lattitude: 0,
-        longitude: 0,
-        address: '',
-        receiptAddress: '',
-        state: '',
-        city: '',
-
-      }
-    )
+    setResponseData({
+      profileImage: '',
+      stateCode: '',
+      name: '',
+      lattitude: 0,
+      longitude: 0,
+      address: '',
+      receiptAddress: '',
+      state: '',
+      city: '',
+    })
   }
 
-  const handleSearchFilter = (e) => {
-    const { name, value } = e.target;
-    setFilter((prev) => ({ ...prev, [name]: value }));
-  };
-
   const handleResCreate = async () => {
-    console.log("Submiting");
-
     try {
-      console.log("Submiting try block");
       setLoader(true)
       const apiResponse = await callAPI(apiUrls.resturentCreate, {}, "POST", responseData);
-      console.log("apiResponse ", apiResponse)
       if (apiResponse?.data?.status) {
         SuccessMessage(apiResponse?.data?.message)
         handleClear()
@@ -266,22 +302,18 @@ export default function Index() {
   };
 
   useEffect(() => {
-    // console.log("ResData: ", responseData)
-    // console.log("MenuValue: ", menuValue)
     resDataRef.current = responseData;
     console.log("Updated Menu ResData: ", resDataRef.current);
   }, [responseData]);
 
   const ParseMenuData = async (index) => {
-    const hasValue = Object.values(menuValue[index]).some((val) => val.trim() !== "");
-    if (!hasValue) return;
     try {
       setLoader(true);
       const data = { parsedData: parseData[index] };
       const menuOpt = selectedMenuOption[index];
       menuData.forEach(obj => {
         obj["restaurantId"] = resId;
-        obj["category"] = catId;
+        // obj["category"] = catId;
       });
       if (menuOpt) {
         if (menuOpt === "startWith") data.nameStartWith = menuValue[index].nameStartWith;
@@ -300,6 +332,16 @@ export default function Index() {
           data.descriptionendFrom = menuValue[index].descriptionendFrom;
         } else if (descriptionOpt === "chef") data.descriptionlineNumber = menuValue[index].descriptionlineNumber;
       }
+      const tagOpt = selectedMenuTag[index];
+      if (tagOpt) {
+        if (tagOpt === "startWith") data.tagsStartWith = menuValue[index].tagsStartWith;
+        else if (tagOpt === "endWith") data.tagsEndWith = menuValue[index].tagsEndWith;
+        else if (tagOpt === "between") {
+          data.tagsstartFrom = menuValue[index].tagsstartFrom;
+          data.tagsendFrom = menuValue[index].tagsendFrom;
+        } else if (tagOpt === "chef") data.tagslineNumber = menuValue[index].tagslineNumber;
+      }
+
       const apiResponse = await callAPI(apiUrls.menuParser, {}, "POST", data);
       if (apiResponse?.data?.status) {
         const updatedInputs = [...menuInput];
@@ -307,34 +349,44 @@ export default function Index() {
           ...updatedInputs[index],
           itemName: apiResponse?.data?.data?.menuName,
           description: apiResponse?.data?.data?.menuDescription,
+          tags: apiResponse?.data?.data?.tags,
         };
         setMenuInput(updatedInputs);
         const newData = [...menuData];
         newData[index] = {
           ...newData[index],
-          category: catId || "",
+          // category: catId || "",
           restaurantId: resId || "",
           itemname: apiResponse?.data?.data?.menuName || "",
           description: apiResponse?.data?.data?.menuDescription || "",
+          tags: apiResponse?.data?.data?.tags || "",
         }
         setMenuData(newData)
-        console.log("Menu Res Data: ", menuData)
         SuccessMessage(apiResponse?.data?.message);
       } else {
         ErrorMessage(apiResponse?.data?.message);
         const resetInputs = [...menuInput];
-        resetInputs[index] = { itemName: "", description: "" };
+        resetInputs[index] = { itemName: "", description: "", tags: [] };
         setMenuInput(resetInputs);
       }
       setLoader(false);
     } catch (error) {
       const resetInputs = [...menuInput];
-      resetInputs[index] = { itemName: "", description: "" };
+      resetInputs[index] = { itemName: "", description: "", tags: [] };
       setMenuInput(resetInputs);
       setLoader(false);
       ErrorMessage(error?.message);
     }
   };
+
+  const handleImageClose = (e, i) => {
+    const newFormValues = [...imgArrMenu]
+    newFormValues.splice(i, 1)
+    setImgArrMenu(newFormValues)
+    const newFormValuesPath = [...menuPath]
+    newFormValuesPath.splice(i, 1)
+    setMenuPath(newFormValuesPath)
+  }
 
   const handleMultiplePath = async (path) => {
     try {
@@ -354,17 +406,74 @@ export default function Index() {
     }
   }
 
-  const handleMenuCreate = async () => {
-    console.log("Submiting");
+  const handleMenuClear = () => {
+    setSelectedMenuTag('')
+    setSelectedMenuDescriptionOption('')
+    setSelectedMenuOption('')
+    setMenuInput([{
+      itemName: "",
+      description: "",
+      tags: []
+    }])
+    setResId('')
+    // setCatId('')
+    setMenuPath([])
+    setImgArrMenu([])
+    setMenuValue([{
+      parsedData: "",
+      nameStartWith: '',
+      nameEndWith: '',
+      namestartFrom: '',
+      nameendFrom: '',
+      namelineNumber: '',
+      descriptionStartWith: '',
+      descriptionEndWith: '',
+      descriptionstartFrom: '',
+      descriptionendFrom: '',
+      descriptionlineNumber: '',
+      tagsStartWith: '',
+      tagsEndWith: '',
+      tagsstartFrom: '',
+      tagsendFrom: '',
+      tagslineNumber: '',
+    }])
+    setMenuData([{
+      category: "",
+      restaurantId: "",
+      itemname: "",
+      description: "",
+      tags: [],
+    }])
+    setParseData([])
+    setCheck(false)
+    setCatCheck(false)
+  }
 
+  const handleMenuCreate = async () => {
+    if (!resId) {
+      return ErrorMessage("Select Restaurant");
+    }
+
+    if (parseData.length !== menuInput.length) {
+      return ErrorMessage("Item name is required");
+    }
+    for (let i = 0; i < menuInput.length; i++) {
+      if (menuInput[i].itemName === '') {
+        return ErrorMessage("Item name is required");
+      }
+      if (menuInput[i].description === '') {
+        return ErrorMessage("Description is required");
+      }
+      if (menuInput[i].category === '') {
+        return ErrorMessage("Select Category");
+      }
+    }
     try {
-      console.log("Submiting try block");
-      setLoader(true)
-      const apiResponse = await callAPI(apiUrls.menuCreate, {}, "POST", { menuData: menuData });
-      console.log("apiResponse ", apiResponse)
+      setLoader(true);
+      const apiResponse = await callAPI(apiUrls.menuCreate, {}, "POST", { menuData: menuData, images: menuPath });
       if (apiResponse?.data?.status) {
         SuccessMessage(apiResponse?.data?.message)
-        handleClear()
+        // handleMenuClear()
       } else {
         ErrorMessage(apiResponse?.data?.message);
       }
@@ -401,9 +510,7 @@ export default function Index() {
       allowedFileTypes.includes(file?.name?.split(".").reverse()[0])
     ) {
       const path = await PostImage(file);
-
       if (path?.length > 0) {
-        console.log("Path ", path)
         setResponseData((val) => ({ ...val, profileImage: path[0] }))
         SuccessMessage("Profile pic uploaded successfully")
       }
@@ -501,11 +608,8 @@ export default function Index() {
   };
 
   const handleAddress = async (address, name) => {
-    console.log("address ", address)
     try {
       const results = await geocodeByAddress(address);
-      console.log("results ", results);
-
       const latLng = await getLatLng(results[0]);
       setResponseData((val) => ({
         ...val,
@@ -518,13 +622,7 @@ export default function Index() {
         name: input.restaurantName ? input.restaurantName : name,
         address: results[0].formatted_address,
         receiptAddress: results[0].formatted_address,
-
       }))
-      // console.log("resDara ", responseData)
-      setLatLong({
-        coordinates: [latLng?.lng, latLng?.lat],
-        type: "Point",
-      });
     } catch (error) {
       console.error("Error fetching latitude and longitude:", error);
     }
@@ -536,6 +634,31 @@ export default function Index() {
     between: "Between",
     chef: "Line Number",
   };
+
+  const handleFieldDelete = (ind) => {
+    setLoader(true);
+    setMenuInput((prev) => {
+      const updatedValues = [...prev];
+      updatedValues.splice(ind, 1);
+      return updatedValues;
+    });
+    setMenuValue((prev) => {
+      const updatedValues = [...prev];
+      updatedValues.splice(ind, 1);
+      return updatedValues;
+    });
+    setMenuData((prev) => {
+      const updatedValues = [...prev];
+      updatedValues.splice(ind, 1);
+      return updatedValues;
+    })
+    setParseData((prev) => {
+      const updatedValues = [...prev];
+      updatedValues.splice(ind, 1);
+      return updatedValues;
+    })
+    setLoader(false);
+  }
 
   const renderInputField = (selectedOption, type) => {
     if (!selectedOption) return null;
@@ -753,6 +876,77 @@ export default function Index() {
           </div>
         );
       }
+    } else if (type === "tags") {
+      if (selectedOption === "startWith") {
+        return (
+          <div className="form-group">
+            <h6>Start With</h6>
+            <input
+              className="form-control"
+              type="text"
+              name="tagsStartWith"
+              value={menuValue[index].tagsStartWith || ""}
+              onChange={(e) => handleMenuValueChange(index, e)}
+              placeholder="Start With"
+            />
+          </div>
+        );
+      } else if (selectedOption === "endWith") {
+        return (
+          <div className="form-group">
+            <h6>End With</h6>
+            <input
+              className="form-control"
+              type="text"
+              name="tagsEndWith"
+              value={menuValue[index].tagsEndWith || ""}
+              onChange={(e) => handleMenuValueChange(index, e)}
+              placeholder="Enter end with"
+            />
+          </div>
+        );
+      } else if (selectedOption === "between") {
+        return (
+          <>
+            <div className="form-group">
+              <h6>Start From</h6>
+              <input
+                className="form-control mb-1"
+                type="text"
+                name="tagsstartFrom"
+                value={menuValue[index].tagsstartFrom || ""}
+                onChange={(e) => handleMenuValueChange(index, e)}
+                placeholder="Enter start from"
+              />
+            </div>
+            <div className="form-group">
+              <h6>End From</h6>
+              <input
+                className="form-control"
+                type="text"
+                name="tagsendFrom"
+                value={menuValue[index].tagsendFrom || ""}
+                onChange={(e) => handleMenuValueChange(index, e)}
+                placeholder="Enter end from"
+              />
+            </div>
+          </>
+        )
+      } else if (selectedOption === "chef") {
+        return (
+          <div className="form-group">
+            <h6>Line Number</h6>
+            <input
+              className="form-control"
+              type="text"
+              name="tagslineNumber"
+              value={menuValue[index].tagslineNumber || ""}
+              onChange={(e) => handleMenuValueChange(index, e)}
+              placeholder="Line number"
+            />
+          </div>
+        );
+      }
     }
     return null;
   };
@@ -773,124 +967,83 @@ export default function Index() {
         </nav>
       </div>
       {loader && <ApiLoder />}
-      {/* Upload Section */}
-      <div className="inner-main-content">
-        <div className="resturant-upload-top mb-30">
-          <div className="upload-btn-sec d-flex justify-content-end gap-3 align-items-center">
-            {/* <div>
-              <label className="startDate mt-2">Restaurants</label>
-              <select
-                name="restaurant"
-                className="form-control"
-                value={filter.restaurant}
-                onChange={handleSearchFilter}
-              >
-                <option value="">All Cities</option>
-                {restaurants.map((restaurant, i) => (
-                  <option key={i} value={restaurant}>
-                    {restaurant}
-                  </option>
-                ))}
-              </select>
-            </div> */}
-            <div>
-              {responseData.profileImage && (
-                <img src={defaultConfig.imagePath + responseData.profileImage} alt="" style={{ height: '75px', width: '75px', borderRadius: '50%' }} />
-              )}
-            </div>
-            <div className="upload-btn-resturant">
-              <button className="creatbtn">
-                <svg
-                  width={24}
-                  height={24}
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <path
-                    d="M11 16V7.85L8.4 10.45L7 9L12 4L17 9L15.6 10.45L13 7.85V16H11ZM6 20C5.45 20 4.97917 19.8042 4.5875 19.4125C4.19583 19.0208 4 18.55 4 18V15H6V18H18V15H20V18C20 18.55 19.8042 19.0208 19.4125 19.4125C19.0208 19.8042 18.55 20 18 20H6Z"
-                    fill="#fff"
-                  />
-                </svg>
-                Restaurant Profile Pic
-              </button>
-              <input
-                type="file"
-                name="restaurantFile"
-                accept="image/png,image/jpg,image/jpeg"
-                onChange={(e) => {
-                  UploadProfilePic(e, ["image/png", "image/jpg", "image/jpeg"]);
-                }}
-              />
-            </div>
-            {/* Upload Buttons */}
-            <div className="upload-btn-resturant">
-              <button className="creatbtn">
-                <svg
-                  width={24}
-                  height={24}
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <path
-                    d="M11 16V7.85L8.4 10.45L7 9L12 4L17 9L15.6 10.45L13 7.85V16H11ZM6 20C5.45 20 4.97917 19.8042 4.5875 19.4125C4.19583 19.0208 4 18.55 4 18V15H6V18H18V15H20V18C20 18.55 19.8042 19.0208 19.4125 19.4125C19.0208 19.8042 18.55 20 18 20H6Z"
-                    fill="#fff"
-                  />
-                </svg>
-                Upload Restaurant
-              </button>
-              <input
-                type="file"
-                name="restaurantFile"
-                accept="image/png,image/jpg,image/jpeg"
-                onChange={(e) => {
-                  UploadImage(e, ["image/png", "image/jpg", "image/jpeg"]);
-                }}
-              />
-            </div>
-            <div className="upload-btn-resturant">
-              <button className="creatbtn">
-                <svg
-                  width={24}
-                  height={24}
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <path
-                    d="M11 16V7.85L8.4 10.45L7 9L12 4L17 9L15.6 10.45L13 7.85V16H11ZM6 20C5.45 20 4.97917 19.8042 4.5875 19.4125C4.19583 19.0208 4 18.55 4 18V15H6V18H18V15H20V18C20 18.55 19.8042 19.0208 19.4125 19.4125C19.0208 19.8042 18.55 20 18 20H6Z"
-                    fill="#fff"
-                  />
-                </svg>
-                Upload Menu
-              </button>
-              <input type="file"
-                name="menuFile"
-                accept="image/png,image/jpg,image/jpeg"
-                multiple
-                onChange={(e) => {
-                  handleMultipleMenu(e)
-                }}
-              />
+      <div className="inner-main-content" >
+        <div className="contentdivbox tablecard gap-4 d-flex" style={{ margin: '10px' }}>
+          <div className="contentdivbox_content flex-grow-1 d-flex flex-column gap-3 contentdivbox_contentnew">
+            <div className="d-flex flexcustom gap-3 flex-wrap">
+              <div className="resturant-upload-top mb-20" >
+                <div className="upload-btn-sec d-flex justify-content-end gap-3 align-items-center" >
+                  <div className="contentdivbox" style={{ marginRight: '400px' }}>
+                    {responseData.profileImage && (
+                      <img src={defaultConfig.imagePath + responseData.profileImage} alt="" style={{ height: '80px', width: '80%', borderRadius: '50%' }} />
+                    )}
+                  </div>
+                  <div className="upload-btn-resturant" style={{ marginLeft: '118px' }}>
+                    <button className="creatbtn" >
+                      <svg
+                        width={24}
+                        height={24}
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <path
+                          d="M11 16V7.85L8.4 10.45L7 9L12 4L17 9L15.6 10.45L13 7.85V16H11ZM6 20C5.45 20 4.97917 19.8042 4.5875 19.4125C4.19583 19.0208 4 18.55 4 18V15H6V18H18V15H20V18C20 18.55 19.8042 19.0208 19.4125 19.4125C19.0208 19.8042 18.55 20 18 20H6Z"
+                          fill="#fff"
+                        />
+                      </svg>
+                      Restaurant Profile Pic
+                    </button>
+                    <input
+                      type="file"
+                      name="restaurantFile"
+                      accept="image/png,image/jpg,image/jpeg"
+                      onChange={(e) => {
+                        UploadProfilePic(e, ["image/png", "image/jpg", "image/jpeg"]);
+                      }}
+                    />
+                  </div>
+                  <div className="upload-btn-resturant" style={{ marginLeft: '5px' }}>
+                    <button className="creatbtn">
+                      <svg
+                        width={24}
+                        height={24}
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <path
+                          d="M11 16V7.85L8.4 10.45L7 9L12 4L17 9L15.6 10.45L13 7.85V16H11ZM6 20C5.45 20 4.97917 19.8042 4.5875 19.4125C4.19583 19.0208 4 18.55 4 18V15H6V18H18V15H20V18C20 18.55 19.8042 19.0208 19.4125 19.4125C19.0208 19.8042 18.55 20 18 20H6Z"
+                          fill="#fff"
+                        />
+                      </svg>
+                      Upload Restaurant
+                    </button>
+                    <input
+                      type="file"
+                      name="restaurantFile"
+                      accept="image/png,image/jpg,image/jpeg"
+                      onChange={(e) => {
+                        UploadImage(e, ["image/png", "image/jpg", "image/jpeg"]);
+                      }}
+                    />
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
 
-        {/* Form Section */}
-        <div className="upload-resturant-sec mb-30" id="upload-resturantid">
+        <div className="upload-resturant-sec mb-3" id="upload-resturantid">
           <div className="container-fluid">
             <div className="row">
-              {/* Left Form */}
               <div className="col-lg-8">
-
                 <div className="tablecard h-100">
                   <div className="tableheader d-flex align-items-center justify-content-between boderbtn">
                     <h2 className="mb-0">Restaurant Detail</h2>
                   </div>
                   <div className="contentdivbox">
                     <div className="row align-items-center">
-                      {/* Restaurant Name */}
                       <div className="col-lg-5 mb-3">
                         <div className="form-group">
                           <h6>Restaurant Name</h6>
@@ -900,7 +1053,6 @@ export default function Index() {
                           }} />
                         </div>
                       </div>
-                      {/* Restaurant Radio Buttons */}
                       <div className="col-lg-7 mt-2">
                         <div className="d-flex gap-2 resturant-radio-btn">
                           {Object.entries(labels).map(([key, label]) => (
@@ -923,22 +1075,13 @@ export default function Index() {
                           ))}
                         </div>
                       </div>
-                      {/* Dynamic Input */}
                       <div className="col-lg-12 mb-3">
                         {renderInputField(selectedRestaurantOption, "name")}
                       </div>
                     </div>
-
                     <div className="row align-items-center">
-                      {/* Address */}
                       <div className="col-lg-5 mb-3">
                         <div className="form-group">
-                          {/* <h6>Address</h6>
-                          <input type="text" className="form-control" value={input?.restaurantAddress} onChange={(e) => {
-                            seInput((prev) => ({ ...prev, restaurantAddress: e.target.value }))
-                            console.log("val ", input)
-                            }} /> */}
-
                           <div className="col-lg-12 col-md-6 col-12 mb-3">
                             <label htmlFor="">Address </label>
                             <PlacesAutocomplete
@@ -983,13 +1126,6 @@ export default function Index() {
                                 </div>
                               )}
                             </PlacesAutocomplete>
-                            <div className="error">
-                              {simpleValidator.current.message(
-                                "Address",
-                                input.restaurantAddress,
-                                "required"
-                              )}
-                            </div>
                           </div>
                         </div>
                       </div>
@@ -1020,7 +1156,6 @@ export default function Index() {
                       <div className="col-lg-12 mb-3">
                         {renderInputField(selectedAddressOption, "address")}
                       </div>
-
                       <div className="btndiv d-flex align-items-center gap-3 justify-content-start mt-30 ps-3" >
                         <Link to="#" className="btndarkblue" onClick={ParseName}>
                           Review
@@ -1033,8 +1168,6 @@ export default function Index() {
                   </div>
                 </div>
               </div>
-
-
               {/* Right Card */}
               <div className="col-lg-4">
                 <div className="tablecard mb-30 h-100">
@@ -1055,64 +1188,137 @@ export default function Index() {
             </div>
           </div>
         </div>
-        <div className="row">
-          {check && (<div className="col-lg-12 col-md-12 col-12 mb-3" style={{ width: '200px' }}>
-            <label htmlFor="">Select Restaurant *</label>
-            <select
-              className="form-select"
-              aria-label="Default select example"
-              onChange={handleChange}
-              value={resId}
-              name="restaurantId"
-            >
-              <option value="">Select</option>
-              {logoList?.map((val, i) => (
-                <option value={val._id} key={i}>{val.name}</option>
-              ))}
-            </select>
-            <div className="error">
-              {simpleValidator.current.message(
-                "restaurant name",
-                resId,
-                `required`
-              )}
+        <div className="contentdivbox tablecard gap-4 d-flex" style={{ margin: '10px' }}>
+          <div className="contentdivbox_content flex-grow-1 d-flex flex-column gap-3 contentdivbox_contentnew">
+            <div className="d-flex flexcustom gap-3 flex-wrap">
+              {check && (
+
+                <div className="col-lg-12 col-md-12 col-12 mb-3" style={{ width: '250px', marginLeft: "11px" }}>
+                  <label htmlFor="">Select Restaurant *</label>
+                  <select
+                    className="form-select"
+                    aria-label="Default select example"
+                    onChange={handleChange}
+                    value={resId}
+                    name="restaurantId"
+                  >
+                    <option value="">Select</option>
+                    {logoList?.map((val, i) => (
+                      <option value={val._id} key={i}>{val.name}</option>
+                    ))}
+                  </select>
+                </div>)}
+
             </div>
-          </div>)}
-          {catCheck && (<div className="col-lg-12 col-md-12 col-12 mb-3" style={{ width: '200px' }}>
-            <label htmlFor="">Select Category *</label>
-            <select
-              className="form-select"
-              aria-label="Default select example"
-              onChange={handleCatChange}
-              value={catId}
-              name="category"
-            >
-              <option value="">Select</option>
-              {cat?.map((val, i) => (
-                <option value={val._id} key={i}>{val.name}</option>
-              ))}
-            </select>
-            <div className="error">
-              {simpleValidator.current.message(
-                "category name",
-                catId,
-                `required`
-              )}
-            </div>
-          </div>)}
+          </div>
+          <div className="upload-btn-resturant" style={{ marginTop: '23px', marginLeft: "0px" }}>
+            <button className="creatbtn">
+              <svg
+                width={24}
+                height={24}
+                viewBox="0 0 24 24"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M11 16V7.85L8.4 10.45L7 9L12 4L17 9L15.6 10.45L13 7.85V16H11ZM6 20C5.45 20 4.97917 19.8042 4.5875 19.4125C4.19583 19.0208 4 18.55 4 18V15H6V18H18V15H20V18C20 18.55 19.8042 19.0208 19.4125 19.4125C19.0208 19.8042 18.55 20 18 20H6Z"
+                  fill="#fff"
+                />
+              </svg>
+              Upload Menu
+            </button>
+            <input type="file"
+              name="menuFile"
+              accept="image/png,image/jpg,image/jpeg"
+              multiple
+              onChange={(e) => {
+                handleMultipleMenu(e)
+              }}
+            />
+          </div>
+          <div className="upload-btn-resturant" style={{ marginTop: '23px', marginLeft: "0px" }}>
+            <button className="creatbtn">
+              <svg
+                width={24}
+                height={24}
+                viewBox="0 0 24 24"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M11 16V7.85L8.4 10.45L7 9L12 4L17 9L15.6 10.45L13 7.85V16H11ZM6 20C5.45 20 4.97917 19.8042 4.5875 19.4125C4.19583 19.0208 4 18.55 4 18V15H6V18H18V15H20V18C20 18.55 19.8042 19.0208 19.4125 19.4125C19.0208 19.8042 18.55 20 18 20H6Z"
+                  fill="#fff"
+                />
+              </svg>
+              Upload Menu Images
+            </button>
+            <input
+              type="file"
+              name="menuFile"
+              accept="image/png,image/jpg,image/jpeg"
+              multiple
+              onChange={(e) => {
+                handleMultipleMenuList(e)
+              }}
+            />
+          </div>
         </div>
-
-
+        {menuPath.length > 0 &&
+          <div className="contentdivbox tablecard gap-4 d-flex" style={{ margin: '10px' }}>
+            <div className="contentdivbox_content flex-grow-1 d-flex flex-column gap-3 contentdivbox_contentnew">
+              <div className="d-flex flexcustom gap-3 flex-wrap">
+                {menuPath.length > 0 && menuPath.map((img, i) => {
+                  return (
+                    <div>
+                      <a className="shadow-lg rounded" style={{
+                        position: 'relative',
+                        display: 'inline-flex',
+                      }}>
+                        <img key={i} src={defaultConfig.imagePath + img} alt={img} style={{ height: '90px', width: 'auto' }} />
+                        <span onClick={(e) => handleImageClose(e, i)} id='my-icon' className="close AClass" style={{
+                          position: 'absolute',
+                          // fontSize: '10px',
+                          top: '0',
+                          right: '0',
+                          zIndex: '1',
+                          width: '13px !important',
+                          height: '13px !important',
+                          cursor: 'pointer',
+                          borderRadius: '50%',
+                          backgroundColor: 'rgb(97, 95, 95)',
+                          color: 'white'
+                        }}>&times;</span>
+                      </a>
+                      <p>{img.substring(0, img.lastIndexOf('.'))}</p>
+                    </div>)
+                })}
+              </div>
+            </div>
+          </div>}
         {/* Menu Section */}
         {parseData.map((line, index) => (
-          <div key={index} className="upload-menu-sec" id="upload-menu-id">
+          <div key={index} className="upload-menu-sec mb-3" id="upload-menu-id">
             <div className="container-fluid">
               <div className="row">
                 <div className="col-lg-8">
                   <div className="tablecard h-100">
-
                     <div className="tableheader d-flex align-items-center justify-content-between boderbtn">
                       <h2 className="mb-0">Menu Item Detail</h2>
+                      {catCheck && (<div className="col-lg-12 col-md-12 col-12 mb-3" style={{ width: '250px' }}>
+                        <label htmlFor="">Select Category *</label>
+                        <select
+                          className="form-select"
+                          aria-label="Default select example"
+                          onChange={(e) => handleCatChange(e, index)}
+                          value={menuInput[index]?.category}
+                          name="category"
+                        >
+                          <option value="">Select</option>
+                          {cat?.map((val, i) => (
+                            <option value={val._id} key={i}>{val.name}</option>
+                          ))}
+                        </select>
+                      </div>)}
                     </div>
                     <div className="contentdivbox">
                       <div className="row align-items-center">
@@ -1120,6 +1326,9 @@ export default function Index() {
                           <div className="form-group">
                             <h6>Item Name</h6>
                             <input type="text" className="form-control" value={menuInput[index]?.itemName || ""} onChange={(e) => {
+                              if (menuInput[index]?.itemName == '') {
+                                ErrorMessage("Item name is required")
+                              }
                               const updatedInputs = [...menuInput];
                               updatedInputs[index] = {
                                 ...updatedInputs[index],
@@ -1129,17 +1338,16 @@ export default function Index() {
                               const newData = [...menuData];
                               newData[index] = {
                                 ...newData[index],
-                                category: catId || "",
+                                // category: catId || "",
                                 restaurantId: resId || "",
                                 itemname: e.target.value,
                               }
                               setMenuData(newData)
-                              console.log("-----MenuData ", menuData)
                             }} />
                           </div>
                         </div>
                         <div className="col-lg-7 mt-2">
-                          <div className="d-flex gap-3 resturant-radio-btn">
+                          <div className="d-flex gap-2 resturant-radio-btn">
                             {Object.entries(labels).map(([key, label]) => (
                               <div key={key} className="d-flex gap-2 align-items-center">
                                 <label htmlFor="itemRadio1">{label}</label>
@@ -1159,7 +1367,6 @@ export default function Index() {
                           </div>
                         </div>
                         <div className="col-lg-12 mb-3">
-                          {/* <div id="dynamicInputContainerItem" /> */}
                           {renderInputFieldMenu(selectedMenuOption[index], "name", index)}
                         </div>
                       </div>
@@ -1168,6 +1375,9 @@ export default function Index() {
                           <div className="form-group">
                             <h6>Description</h6>
                             <input type="text" className="form-control" value={menuInput[index]?.description || ""} onChange={(e) => {
+                              if (menuInput[index]?.description == '') {
+                                ErrorMessage("Description is required")
+                              }
                               const updatedInputs = [...menuInput];
                               updatedInputs[index] = {
                                 ...updatedInputs[index],
@@ -1177,17 +1387,16 @@ export default function Index() {
                               const newData = [...menuData];
                               newData[index] = {
                                 ...newData[index],
-                                category: catId || "",
+                                // category: catId || "",
                                 restaurantId: resId || "",
                                 description: e.target.value,
                               }
                               setMenuData(newData)
-                              console.log("-----MenuData1 ", menuData)
                             }} />
                           </div>
                         </div>
                         <div className="col-lg-7 mt-2">
-                          <div className="d-flex gap-3 resturant-radio-btn">
+                          <div className="d-flex gap-2 resturant-radio-btn">
                             {Object.entries(labels).map(([key, label]) => (
                               <div key={key} className="d-flex gap-2 align-items-center">
                                 <label htmlFor="descriptionRadio1">
@@ -1209,51 +1418,30 @@ export default function Index() {
                           </div>
                         </div>
                         <div className="col-lg-12 mb-3">
-                          {/* <div id="dynamicInputContainerDescription" /> */}
-                          {renderInputFieldMenu(selectedMenuDescriptionOption[index], "description", index)}                        </div>
-
+                          {renderInputFieldMenu(selectedMenuDescriptionOption[index], "description", index)}
+                        </div>
                       </div>
                       <div className="row align-items-center">
                         <div className="col-lg-5 mb-3">
                           <div className="form-group">
                             <h6>Tags</h6>
                             <ReactTags
-                              // tags={
-                              //   action === "edit"
-                              //     ? Array.isArray(value?.tags)
-                              //       ? value?.tags.map((text) => ({ id: text, text }))
-                              //       : []
-                              //     : value?.tags
-                              // }
-                              // suggestions={suggestions}
-                              handleDelete={(e) => handleDelete(index)}
-                              handleAddition={(e) => handleAddition(tag, index)}
+                              tags={
+                                Array.isArray(menuData[index]?.tags)
+                                  ? menuData[index]?.tags.map((text) => ({ id: text, text }))
+                                  : []
+                              }
+                              suggestions={suggestions}
+                              handleDelete={(i) => handleDelete(index, i)}
+                              handleAddition={(tag) => handleAddition(index, tag)}
                               delimiters={[KeyCodes.comma, KeyCodes.enter]}
-                              // handleFilterSuggestions={handleFilterSuggestions}
                               placeholder="Type and press Enter..."
                               minQueryLength={1}
                             />
-                            {/* <input type="text" className="form-control" value={menuInput[index]?.description || ""} onChange={(e) => {
-                              const updatedInputs = [...menuInput];
-                              updatedInputs[index] = {
-                                ...updatedInputs[index],
-                                description: e.target.value
-                              };
-                              setMenuInput(updatedInputs)
-                              const newData = [...menuData];
-                              newData[index] = {
-                                ...newData[index],
-                                category: catId || "",
-                                restaurantId: resId || "",
-                                tags: e.target.value,
-                              }
-                              setMenuData(newData)
-                              console.log("-----MenuData1 ", menuData)
-                            }} /> */}
                           </div>
                         </div>
                         <div className="col-lg-7 mt-2">
-                          <div className="d-flex gap-3 resturant-radio-btn">
+                          <div className="d-flex gap-2 resturant-radio-btn">
                             {Object.entries(labels).map(([key, label]) => (
                               <div key={key} className="d-flex gap-2 align-items-center">
                                 <label htmlFor="tags1">
@@ -1262,7 +1450,7 @@ export default function Index() {
                                 <input
                                   className="form-check-input"
                                   type="radio"
-                                  name={`menuTagOption_${index}`}
+                                  // name={`menuTagOption_${index}`}
                                   value={key}
                                   checked={selectedMenuTag[index] === key}
                                   onChange={(e) => {
@@ -1275,11 +1463,14 @@ export default function Index() {
                           </div>
                         </div>
                         <div className="col-lg-12 mb-3">
-                          {/* <div id="dynamicInputContainerDescription" /> */}
-                          {renderInputFieldMenu(selectedMenuTag[index], "tags", index)}                        </div>
+                          {renderInputFieldMenu(selectedMenuTag[index], "tags", index)}
+                        </div>
                         <div className="btndiv d-flex align-items-center gap-3 justify-content-start mt-30 ps-3">
                           <Link to="#" className="btndarkblue" onClick={(e) => ParseMenuData(index)}>
                             Review
+                          </Link>
+                          <Link to="#" className="btn btn-danger" onClick={(e) => handleFieldDelete(index)}>
+                            Delete
                           </Link>
                         </div>
                       </div>
@@ -1293,7 +1484,6 @@ export default function Index() {
                     </div>
                     <div className="contentdivbox ">
                       <p style={{ whiteSpace: "pre-line" }}>{line}</p>
-                      {/* <img src={defaultConfig.imagePath + pathArr[index]} alt="" /> */}
                     </div>
                   </div>
                 </div>
@@ -1301,14 +1491,14 @@ export default function Index() {
             </div>
           </div>
         ))}
-        <div className="btndiv d-flex align-items-center gap-3 justify-content-start mt-30 ps-3">
-          <Link to="#" className="btndarkblue" onClick={handleMenuCreate}>
+        {parseData.length > 0 && (<div className="btndiv d-flex align-items-center gap-3 justify-content-start mt-30 ps-3">
+          <button to="#" className="btndarkblue" onClick={handleMenuCreate}>
             Submit
-          </Link>
-          <Link to="#" className="btndarkblue-outline">
+          </button>
+          <button to="#" className="btndarkblue-outline" onClick={handleMenuClear}>
             Clear{" "}
-          </Link>
-        </div>
+          </button>
+        </div>)}
       </div>
     </div>
   );

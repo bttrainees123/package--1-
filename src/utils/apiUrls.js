@@ -39,6 +39,7 @@ export const apiUrls = {
     mediaGetActive: "admin/mediaGetActive",
     //Menu
     menuParser: "admin/menuParser",
+    multiUploadImage: "multiUploadImage",
     menuCreate: "admin/menuCreate",
     reciptMenuParserAdmin: "admin/reciptMenuParser",
     restaurantMenuListingAdmin: "admin/restaurantMenuListingAdmin",

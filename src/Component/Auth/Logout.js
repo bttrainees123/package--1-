@@ -11,11 +11,10 @@ export default function Logout({ open, handleClose }) {
     handleClose();
     SuccessMessage("Logged out Successfully")
     navigate('/')
-
   }
+
   return (
     <>
-
       <Dialog
         open={open}
         fullWidth={true}
@@ -60,8 +59,6 @@ export default function Logout({ open, handleClose }) {
             </div>
           </div>
         </div>
-
-
       </Dialog>
     </>
   )

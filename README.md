@@ -83,3 +83,26 @@ all pagination logic correction
 <!-- pagination in category page -->
 
 <!-- badges page in admin -->
+
+<!-- multiple image of menu -->
+<!-- Multiple menu creaate? -->
+<!-- Tag functanality in menu -->
+<!-- select restaurant and select category for multiple menu -->
+<!-- Profile pic of image -->
+<!-- Search by first letter of every word in sentence -->
+
+<!-- UI improvement upload restaurant page -->
+
+
+<!-- Validation in upload restaurant page -->
+<!-- dlete button -->
+
+<!-- 03-06 -->
+<!-- individual category for menus in upload restaurant page -->
+<!-- https://www.testgorilla.com/blog/advanced-react-js-interview-questions/ -->
+<!-- OCR automation recept integreation -->
+
+<!-- 04 - 06 -->
+<!-- shutter project setup -->
+<!-- Understanding flow of project -->
+<!-- test functanality -->

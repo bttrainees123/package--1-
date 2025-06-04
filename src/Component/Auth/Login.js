@@ -64,8 +64,6 @@ export default function Login() {
     }
   };
 
-
-
   return (
     <>
       {loader && <ApiLoder />}
@@ -97,7 +95,6 @@ export default function Login() {
                             value={value?.email}
                             handelChange={handleChange} labelclassName={"form-label form-label-custom"} label={"Email *"}
                           />
-
                           <div className="error">
                             {simpleValidator.current.message(
                               "email",
@@ -108,7 +105,6 @@ export default function Login() {
                         </div>
                         <div className="col-lg-12 mb-5">
                           <div className="position-relative password_svg">
-
                             <InputFeild
                               type={eye ? "text" : "password"}
                               className={"form-control form-control-custom"}
@@ -118,9 +114,6 @@ export default function Login() {
                               value={value?.password}
                               handelChange={handleChange} labelclassName={"form-label form-label-custom"} label={"Password *"}
                             />
-
-
-
                             <div className="error">
                               {simpleValidator.current.message(
                                 "password",
@@ -135,7 +128,6 @@ export default function Login() {
                         </div>
                         <div className="col-lg-12">
                           <Button disabled={loader} text={"Sign In"} className={"btnlogin w-100"} type={"submit"} />
-
                         </div>
                       </div>
                     </form>
