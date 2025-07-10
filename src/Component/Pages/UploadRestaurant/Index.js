@@ -455,11 +455,11 @@ export default function Index() {
     }
 
     if (parseData.length !== menuInput.length) {
-      return ErrorMessage("Item name is required");
+      // return ErrorMessage("Item name is required");
     }
     for (let i = 0; i < menuInput.length; i++) {
       if (menuInput[i].itemName === '') {
-        return ErrorMessage("Item name is required");
+        // return ErrorMessage("Item name is required");
       }
       if (menuInput[i].description === '') {
         return ErrorMessage("Description is required");
@@ -473,7 +473,7 @@ export default function Index() {
       const apiResponse = await callAPI(apiUrls.menuCreate, {}, "POST", { menuData: menuData, images: menuPath });
       if (apiResponse?.data?.status) {
         SuccessMessage(apiResponse?.data?.message)
-        // handleMenuClear()
+        handleMenuClear()
       } else {
         ErrorMessage(apiResponse?.data?.message);
       }
@@ -1327,7 +1327,7 @@ export default function Index() {
                             <h6>Item Name</h6>
                             <input type="text" className="form-control" value={menuInput[index]?.itemName || ""} onChange={(e) => {
                               if (menuInput[index]?.itemName == '') {
-                                ErrorMessage("Item name is required")
+                                // ErrorMessage("Item name is required")
                               }
                               const updatedInputs = [...menuInput];
                               updatedInputs[index] = {

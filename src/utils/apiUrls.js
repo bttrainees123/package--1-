@@ -16,6 +16,8 @@ export const apiUrls = {
     reviewHistory: "admin/reviewHistory",
     deleteReviewById: "admin/deleteReviewById",
     resturentCreate: "admin/restaurantCreate",
+    addMenuConfig: 'admin/addmenuconfig',
+    restaurantParser: 'admin/restaurantParser',
     //user
     userLists: "admin/userLists",
     updateUser: "admin/updateUser",

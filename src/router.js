@@ -199,6 +199,13 @@ const routes = [
     path: '/admin/upload/restaurant',
     element: lazy(() => import('./Component/Pages/UploadRestaurant/Index'))
   },
+  {
+    guard: Authenticated,
+    layout: HeaderLayout,
+    exact: true,
+    path: '/admin/parse/restaurant',
+    element: lazy(() => import('./Component/Pages/ParseRestaurant/Index'))
+  },
 
 
 
