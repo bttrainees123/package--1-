@@ -18,6 +18,9 @@ export const apiUrls = {
     resturentCreate: "admin/restaurantCreate",
     addMenuConfig: 'admin/addmenuconfig',
     restaurantParser: 'admin/restaurantParser',
+    createReciptConfig: 'admin/createReciptConfig',
+    getReciptConfig: 'admin/getReciptConfig',
+    deleteReciptConfig: 'admin/deleteReciptConfig',
     //user
     userLists: "admin/userLists",
     updateUser: "admin/updateUser",

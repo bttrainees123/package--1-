@@ -1,141 +1,94 @@
-import { useEffect, useRef, useState } from 'react'
-import { Link } from 'react-router-dom'
-import { callAPI } from '../../../utils/apiUtils'
-import { apiUrls } from '../../../utils/apiUrls'
-import { ApiLoder, ErrorMessage, SuccessMessage } from '../../../helpers/common'
-import { PostImage } from '../../../utils/apiCall'
-
+import React, { useEffect, useState } from "react";
+import { callAPI } from "../../../utils/apiUtils";
+import {
+    ApiLoder,
+    ErrorMessage,
+    HandleDelete,
+    SuccessMessage,
+} from "../../../helpers/common";
+import { apiUrls } from "../../../utils/apiUrls";
+import { DeleteSvg, EditSvg, PlushSvg } from "../../../SvgFile/Index";
+import { Link } from "react-router-dom";
+import Topbar from "../../../Layout/Topbar";
+import AddReceiptConfig from "./AddReceiptConfig";
+import { defaultConfig } from "../../../config";
 const Index = () => {
-
-    const [loader, setLoader] = useState(false);
-    const [resId, setResId] = useState('')
+    const [open, setOpen] = useState(false);
+    const [delOpen, setDelOpen] = useState(false);
+    const [loder, setLoader] = useState(false);
     const [logoList, setLogoList] = useState([]);
+    const [action, setAction] = useState("");
+    const [object, setObject] = useState("");
+    const [restaurantId, setRestaurantId] = useState("")
+    const [resList, setResList] = useState([])
 
-
-    const [value, setValue] = useState({
-        restaurantId: "",
-        restaurantName: "",
-        restaurantNameStartWith: "",
-        restaurantNameEndWith: "",
-        restaurantNameStartFrom: "",
-        restaurantNameEndFrom: "",
-        restaurantNameLineNumber: [],
-        restaurantAddress: "",
-        restaurantAddressStartWith: "",
-        restaurantAddressEndWith: "",
-        restaurantAddressStartFrom: "",
-        restaurantAddressEndFrom: "",
-        restaurantAddressLineNumber: [],
-        receiptNumber: "",
-        receiptNumberStartWith: "",
-        receiptNumberEndWith: "",
-        receiptNumberStartFrom: "",
-        receiptNumberEndFrom: "",
-        receiptNumberLineNumber: [],
-        total_price: "",
-        total_priceStartWith: "",
-        total_priceEndWith: "",
-        total_priceStartFrom: "",
-        total_priceEndFrom: "",
-        total_priceLineNumber: [],
-        dateAndTime: "",
-        dateAndTimeStartWith: "",
-        dateAndTimeEndWith: "",
-        dateAndTimeStartFrom: "",
-        dateAndTimeEndFrom: "",
-        dateAndTimeLineNumber: [],
-        menuItems: [],
-        menuItemsStartWith: "",
-        menuItemsEndWith: "",
-        menuItemsStartFrom: "",
-        menuItemsEndFrom: "",
-        menuItemsLineNumber: [],
-        date: "",
-        dateStartWith: "",
-        dateEndWith: "",
-        dateStartFrom: "",
-        dateEndFrom: "",
-        dateLineNumber: [],
-        time: "",
-        timeStartWith: "",
-        timeEndWith: "",
-        timeStartFrom: "",
-        timeEndFrom: "",
-        timeLineNumber: [],
-    });
-
-    const [selectedRestaurantOption, setSelectedRestaurantOption] = useState("");
-    const [selectedAddressOption, setSelectedAddressOption] = useState("");
-    const [selectedReceiptNumberOption, setSelecteReceiptNumberOption] = useState("");
-    const [selectedTotalPriceOption, setSelecteTotalPriceOption] = useState("");
-    const [selectedMenuItemsOption, setSelecteMenuItemsOption] = useState("");
-    const [selectedDateOption, setSelecteDateOption] = useState("");
-    const [selectedTimeOption, setSelecteTimeOption] = useState("");
-    const [input, seInput] = useState({
-        restaurantAddress: "",
-        restaurantName: "",
-        receiptNumber: '',
-        total_price: '',
-        dateAndTime: '',
-        menuItems: ''
-    });
-
-    const [responseData, setResponseData] = useState({
-        profileImage: '',
-        stateCode: '',
-        name: '',
-        lattitude: 0,
-        longitude: 0,
-        address: '',
-        receiptAddress: '',
-        state: '',
-        city: '',
-    })
-
-    const resDataRef = useRef(responseData)
-
-    const handleClear = () => {
-        setSelectedRestaurantOption("")
-        setSelectedAddressOption("")
-        seInput({
-            restaurantAddress: "",
-            restaurantName: ""
-        })
-        setValue({
-            parsedData: "",
-            nameStartWith: "",
-            nameEndWith: "",
-            namestartFrom: "",
-            nameendFrom: "",
-            namelineNumber: "",
-            addressStartWith: "",
-            addressEndWith: "",
-            addressstartFrom: "",
-            addressendFrom: "",
-            addresslineNumber: "",
-        })
-        setResponseData({
-            profileImage: '',
-            stateCode: '',
-            name: '',
-            lattitude: 0,
-            longitude: 0,
-            address: '',
-            receiptAddress: '',
-            state: '',
-            city: '',
-        })
-    }
-    const handleChange = (e) => {
-        setResId(e.target.value)
-        console.log("res id ", e.target.value)
+    const LogoListAPI = async () => {
+        setLoader(true);
+        try {
+            let query = { _id: restaurantId };
+            const apiResponse = await callAPI(apiUrls.getReciptConfig, query, "GET");
+            if (apiResponse?.data?.status === true) {
+                if (apiResponse?.data?.data?.length > 0) {
+                    setLogoList(apiResponse?.data?.data);
+                } else {
+                    setLogoList([]);
+                }
+            } else {
+                ErrorMessage(apiResponse?.data?.message);
+            }
+            setLoader(false);
+        } catch (error) {
+            setLoader(false);
+            ErrorMessage(error?.message);
+        }
     };
+
+    const handleclose = () => {
+        setOpen(false);
+    };
+    const handledelclose = () => {
+        setDelOpen(false);
+    };
+
+    const handleDelete = async () => {
+        setLoader(true);
+        try {
+            const response = await callAPI(
+                apiUrls.deleteReciptConfig,
+                { _id: object },
+                "GET"
+            );
+            setLoader(false);
+            if (response.data.status) {
+                const newList = logoList.filter((val) => {
+                    return val._id !== object;
+                });
+                setLogoList(newList);
+                SuccessMessage(response.data.message);
+                setDelOpen(false);
+            } else {
+                ErrorMessage(response.data.message);
+            }
+        } catch (error) {
+            setLoader(false);
+            ErrorMessage(error.message);
+        }
+    };
+
+    useEffect(() => {
+        LogoListAPI();
+    }, [restaurantId]);
+
+    const handleChange = (e) => {
+        setRestaurantId(e?.target?.value)
+    };
+
     const RestaurantListAPI = async () => {
         try {
             const apiResponse = await callAPI(apiUrls.getRestaurantName, {}, "GET");
             if (apiResponse?.data?.status) {
                 if (apiResponse?.data?.data?.length > 0) {
-                    setLogoList(apiResponse.data.data);
+                    setResList(apiResponse?.data?.data);
                 } else {
                     setLogoList([]);
                 }
@@ -146,695 +99,117 @@ const Index = () => {
     useEffect(() => {
         RestaurantListAPI();
     }, []);
-
-
-    const renderInputField = (selectedOption, type) => {
-        if (!selectedOption) return null;
-        // const prefix = type === "name" ? "name" : "address";
-        let prefix = ""
-        if (type === "name") {
-            prefix = "restaurantName"
-        }
-        else if (type === "address") {
-            prefix = "restaurantAddress"
-        }
-        else if (type === "receiptNumber") {
-            prefix = "receiptNumber"
-        }
-        else if (type === "total_price") {
-            prefix = "total_price"
-        }
-        else if (type === "date") {
-            prefix = "date"
-        }
-        else if (type === "time") {
-            prefix = "time"
-        }
-        else if (type === "menuItems") {
-            prefix = "menuItems"
-        }
-        if (selectedOption === "chef") {
-            const fieldName = prefix + "LineNumber";
-            return (
-                <div className="form-group">
-                    <h6>{labels[selectedOption]}</h6>
-                    <input
-                        type="text"
-                        className="form-control"
-                        placeholder="Start From"
-                        value={value[fieldName]}
-                        // onChange={(e) => setValue((prev) => ({...prev, [fieldName]: [e.target.value]}))}
-                        onChange={(e) => {
-                            setValue((prev) => ({ ...prev, [fieldName]: [parseInt(e.target.value)] }))
-
-                            //  onChange={(e) => {
-                            // setLineNumber(e?.target?.value)
-                            // const stringArray = lineNumber.split(',').map(s => s.trim())
-                            // const newNumbers = stringArray.map(str => parseInt(str.trim(), 10)).filter(num => !isNaN(num));
-                            // setValue((prev) => ({ ...prev, [fieldName]: newNumbers }))
-                            // }
-                        }}
-                    />
-                </div>
-            );
-
-        } else if (selectedOption === "between") {
-            const startField = prefix + "StartFrom";
-            const endField = prefix + "EndFrom";
-            return (
-                <>
-                    <div className="form-group mb-3">
-                        <h6>Start From</h6>
-                        <input
-                            type="text"
-                            className="form-control"
-                            placeholder="Start From"
-                            value={value[startField]}
-                            onChange={(e) =>
-                                setValue((prev) => ({ ...prev, [startField]: e.target.value }))
-                            }
-                        />
-                    </div>
-                    <div className="form-group">
-                        <h6>End From</h6>
-                        <input
-                            type="text"
-                            className="form-control"
-                            placeholder="End From"
-                            value={value[endField]}
-                            onChange={(e) =>
-                                setValue((prev) => ({ ...prev, [endField]: e.target.value }))
-                            }
-                        />
-                    </div>
-                </>
-            );
-        } else {
-            const fieldName =
-                prefix +
-                selectedOption.charAt(0).toUpperCase() +
-                selectedOption.slice(1);
-            return (
-                <div className="form-group">
-                    <h6>{labels[selectedOption]}</h6>
-                    <input
-                        type="text"
-                        className="form-control"
-                        placeholder={`Enter ${labels[selectedOption]}`}
-                        value={value[fieldName]}
-                        onChange={(e) =>
-                            setValue((prev) => ({ ...prev, [fieldName]: e.target.value }))
-                        }
-                    />
-                </div>
-            );
-        }
-    };
-
-
-
-    const labels = {
-        startWith: "Start With",
-        endWith: "End With",
-        between: "Between",
-        chef: "Line Number",
-    };
-
-    const menuLabels = {
-        between: "Between",
-    }
-
-    const handleResCreate = async () => {
-        try {
-            setLoader(true)
-            const apiResponse = await callAPI(apiUrls.resturentCreate, {}, "POST", responseData);
-            if (apiResponse?.data?.status) {
-                SuccessMessage(apiResponse?.data?.message)
-                handleClear()
-            } else {
-                ErrorMessage(apiResponse?.data?.message);
-            }
-            setLoader(false);
-        }
-        catch (error) {
-            setLoader(false);
-            ErrorMessage(error?.message);
-        }
-    }
-
-
-    useEffect(() => {
-        resDataRef.current = responseData;
-    }, [responseData]);
-
-
-
-
-    const ParseName = async () => {
-        // const hasValue = Object.values(value).some((val) => val.trim() !== "");
-        // if (!hasValue) return;
-        try {
-            setLoader(true);
-            let data = {
-                parsedData: value.parsedData,
-                restaurantId: resId,
-            };
-
-            if (selectedRestaurantOption) {
-                if (selectedRestaurantOption === "startWith") {
-                    data.restaurantNameStartWith = value.restaurantNameStartWith;
-                } else if (selectedRestaurantOption === "endWith") {
-                    data.restaurantNameEndWith = value.restaurantNameEndWith;
-                } else if (selectedRestaurantOption === "between") {
-                    data.restaurantNameStartFrom = value.restaurantNameStartFrom;
-                    data.restaurantNameEndFrom = value.restaurantNameEndFrom;
-                } else if (selectedRestaurantOption === "chef") {
-                    data.restaurantNameLineNumber = value.restaurantNameLineNumber;
-                }
-            }
-            if (selectedAddressOption) {
-                if (selectedAddressOption === "startWith") {
-                    data.restaurantAddressStartWith = value.restaurantAddressStartWith;
-                } else if (selectedAddressOption === "endWith") {
-                    data.restaurantAddressEndWith = value.restaurantAddressEndWith;
-                } else if (selectedAddressOption === "between") {
-                    data.restaurantAddressStartFrom = value.restaurantAddressStartFrom;
-                    data.restaurantAddressEndFrom = value.restaurantAddressEndFrom;
-                } else if (selectedAddressOption === "chef") {
-                    data.restaurantAddressLineNumber = value.restaurantAddressLineNumber;
-                }
-            }
-            if (selectedReceiptNumberOption) {
-                if (selectedReceiptNumberOption === "startWith") {
-                    data.receiptNumberStartWith = value.receiptNumberStartWith;
-                } else if (selectedReceiptNumberOption === "endWith") {
-                    data.receiptNumberEndWith = value.receiptNumberEndWith;
-                } else if (selectedReceiptNumberOption === "between") {
-                    data.receiptNumberStartFrom = value.receiptNumberStartFrom;
-                    data.receiptNumberEndFrom = value.receiptNumberEndFrom;
-                } else if (selectedReceiptNumberOption === "chef") {
-                    data.receiptNumberLineNumber = value.receiptNumberLineNumber;
-                }
-            }
-            if (selectedTotalPriceOption) {
-                if (selectedTotalPriceOption === "startWith") {
-                    data.total_priceStartWith = value.total_priceStartWith;
-                } else if (selectedTotalPriceOption === "endWith") {
-                    data.total_priceEndWith = value.total_priceEndWith;
-                } else if (selectedTotalPriceOption === "between") {
-                    data.total_priceStartFrom = value.total_priceStartFrom;
-                    data.total_priceEndFrom = value.total_priceEndFrom;
-                } else if (selectedTotalPriceOption === "chef") {
-                    data.total_priceLineNumber = value.total_priceLineNumber;
-                }
-            }
-            if (selectedDateOption) {
-                if (selectedDateOption === "startWith") {
-                    data.dateStartWith = value.dateStartWith;
-                } else if (selectedDateOption === "endWith") {
-                    data.dateEndWith = value.dateEndWith;
-                } else if (selectedDateOption === "between") {
-                    data.dateStartFrom = value.dateStartFrom;
-                    data.dateEndFrom = value.dateEndFrom;
-                } else if (selectedDateOption === "chef") {
-                    data.dateLineNumber = value.dateLineNumber;
-                }
-            }
-            if (selectedTimeOption) {
-                if (selectedTimeOption === "startWith") {
-                    data.timeStartWith = value.timeStartWith;
-                } else if (selectedTimeOption === "endWith") {
-                    data.timeEndWith = value.timeEndWith;
-                } else if (selectedTimeOption === "between") {
-                    data.timeStartFrom = value.timeStartFrom;
-                    data.timeEndFrom = value.timeEndFrom;
-                } else if (selectedTimeOption === "chef") {
-                    data.timeLineNumber = value.timeLineNumber;
-                }
-            }
-            if (selectedMenuItemsOption) {
-                if (selectedMenuItemsOption === "startWith") {
-                    data.menuItemsStartWith = value.menuItemsStartWith;
-                } else if (selectedMenuItemsOption === "endWith") {
-                    data.menuItemsEndWith = value.menuItemsEndWith;
-                } else if (selectedMenuItemsOption === "between") {
-                    data.menuItemsStartFrom = value.menuItemsStartFrom;
-                    data.menuItemsEndFrom = value.menuItemsEndFrom;
-                } else if (selectedMenuItemsOption === "chef") {
-                    data.menuItemsLineNumber = value.menuItemsLineNumber;
-                }
-            }
-
-            const apiResponse = await callAPI(
-                apiUrls.restaurantParser,
-                {},
-                "POST",
-                data
-            );
-            if (apiResponse?.data?.status) {
-                seInput((val) => {
-                    return {
-                        ...val, restaurantAddress: apiResponse?.data?.data.restaurantAddress,
-                        restaurantName: apiResponse?.data?.data?.restaurantName,
-                        receiptNumber: apiResponse?.data?.data?.receiptNumber,
-                        total_price: apiResponse?.data?.data?.total_price,
-                        date: apiResponse?.data?.data?.date,
-                        menuItems: JSON.stringify(apiResponse?.data?.data.menuItems),
-                        time: apiResponse?.data?.data?.time,
-                        
-                    };
-                });
-                SuccessMessage(apiResponse?.data?.message);
-                setResponseData((val) => ({
-                    ...val, receiptAddress: apiResponse?.data?.data.restaurantAddress,
-                    address: apiResponse?.data?.data.restaurantAddress,
-                    name: apiResponse?.data?.data.restaurantName
-                }));
-            } else {
-                ErrorMessage(apiResponse?.data?.message);
-                seInput((val) => {
-                    return {
-                        ...val, restaurantAddress: "", restaurantName: "", receiptNumber: "",
-                        total_price: "",
-                        dateAndTime: "",
-                        menuItems: null
-                    };
-                });
-            }
-            setLoader(false);
-        } catch (error) {
-            seInput((val) => {
-                return { ...val, restaurantAddress: "", restaurantName: "" };
-            });
-            setLoader(false);
-            ErrorMessage(error?.message);
-        }
-    };
-
-    const UploadImage = async (e, allowedFileTypes) => {
-        let file = e?.target?.files[0];
-        if (
-            allowedFileTypes.includes(file?.type) ||
-            allowedFileTypes.includes(file?.name?.split(".").reverse()[0])
-        ) {
-            const path = await PostImage(file);
-            if (path?.length > 0) {
-                Serviceadd(path[0]);
-            }
-            e.target.value = null;
-        } else {
-            ErrorMessage("Invalid file Format");
-            e.target.value = null;
-            return false;
-        }
-    };
-
-    const Serviceadd = async (image) => {
-        try {
-            setLoader(true);
-            const apiResponse = await callAPI(
-                apiUrls.reciptRestaurantMenu,
-                {},
-                "POST",
-                { image: image }
-            );
-            if (apiResponse?.data?.status) {
-                setValue((val) => {
-                    return { ...val, parsedData: apiResponse?.data?.data };
-                });
-                SuccessMessage(apiResponse?.data?.message);
-            } else {
-                ErrorMessage(apiResponse?.data?.message);
-            }
-            setLoader(false);
-        } catch (error) {
-            setLoader(false);
-            ErrorMessage(error?.message);
-        }
-    };
-
-
     return (
         <>
             <div id="page-container" className="page_contclass">
-                <div className="top-title-sec d-flex align-items-center justify-content-between mb-30">
-                    <h1 className="heading24 mb-0">Upload Restaurant</h1>
-                    <nav aria-label="breadcrumb">
-                        <ol className="breadcrumb mb-0 custbread">
-                            <li className="breadcrumb-item">
-                                <Link to="/admin/dashborad">Dashboard</Link>
-                            </li>
-                            <li className="breadcrumb-item active" aria-current="page">
-                                Upload Restaurant
-                            </li>
-                        </ol>
-                    </nav>
-                </div>
-                {loader && <ApiLoder />}
-                <div className="inner-main-content" >
-                    <div className="contentdivbox tablecard gap-4 d-flex" style={{ margin: '10px' }}>
-                        <div className="contentdivbox_content flex-grow-1 d-flex flex-column gap-3 contentdivbox_contentnew">
-                            <div className="d-flex flexcustom gap-3 flex-wrap">
-                                <div className="resturant-upload-top mb-20" >
-                                    <div className="upload-btn-sec d-flex justify-content-end gap-3 align-items-center" >
+                <Topbar Title="Receipt Config" Subtitle="Receipt Config">
+                    <Link
+                        to="#"
+                        onClick={() => {
+                            setAction("add");
+                            setOpen(true);
+                        }}
+                        className="creatbtn d-flex align-items-center justify-content-center gap-2"
+                    >
+                        <PlushSvg />
+                        Parse Restaurant
+                    </Link>
+                </Topbar>
+                <div className="inner-main-content">
+                    {loder && <ApiLoder />}
+                    <div className="tablecard mb-30">
+                        <div className="tableheader d-flex align-items-center justify-content-between boderbtn" style={{padding: '0px 16px'}}>
+                            <h2 className="mb-0">Receipt Config</h2>
+                            <div className="col-lg-12 col-md-12 col-12 mb-3 " style={{ marginTop: "12px", width: '250px', marginLeft: '540px' }}>
+                                <select
+                                    className="form-select"
+                                    aria-label="Default select example"
+                                    onChange={handleChange}
+                                    value={restaurantId}
+                                    name="restaurantId"
+                                >
 
-                                        <div className="col-lg-12 col-md-12 col-12 mb-3 " style={{ marginTop: "12px", width: '250px', marginLeft: '518px' }}>
-                                            <select
-                                                className="form-select"
-                                                aria-label="Default select example"
-                                                onChange={handleChange}
-                                                value={resId}
-                                                name="restaurantId"
-                                            >
-
-                                                <option value="">Select Restaurant</option>
-                                                {logoList?.map((val, i) => (
-                                                    <option value={val._id} key={i}>{val.name}</option>
-                                                ))}
-                                            </select>
-                                        </div>
-
-                                        <div className="upload-btn-resturant">
-                                            <button className="creatbtn">
-                                                <svg
-                                                    width={24}
-                                                    height={24}
-                                                    viewBox="0 0 24 24"
-                                                    fill="none"
-                                                    xmlns="http://www.w3.org/2000/svg"
-                                                >
-                                                    <path
-                                                        d="M11 16V7.85L8.4 10.45L7 9L12 4L17 9L15.6 10.45L13 7.85V16H11ZM6 20C5.45 20 4.97917 19.8042 4.5875 19.4125C4.19583 19.0208 4 18.55 4 18V15H6V18H18V15H20V18C20 18.55 19.8042 19.0208 19.4125 19.4125C19.0208 19.8042 18.55 20 18 20H6Z"
-                                                        fill="#fff"
-                                                    />
-                                                </svg>
-                                                Upload Receipt
-                                            </button>
-                                            <input
-                                                type="file"
-                                                name="restaurantFile"
-                                                accept="image/png,image/jpg,image/jpeg"
-                                                onChange={(e) => {
-                                                    UploadImage(e, ["image/png", "image/jpg", "image/jpeg"]);
-                                                }}
-                                            />
-                                        </div>
-                                    </div>
-                                </div>
+                                    <option value="">Select Restaurant</option>
+                                    {resList?.map((val, i) => (
+                                        <option value={val._id} key={i}>{val.name}</option>
+                                    ))}
+                                </select>
                             </div>
                         </div>
-                    </div>
+                        <div className="table-responsive">
+                            <table className="table mb-0">
+                                <thead>
+                                    <tr>
+                                        <th>#</th>
+                                        <th>Restaurant Name</th>
 
-                    <div className="upload-resturant-sec mb-3" id="upload-resturantid">
-                        <div className="container-fluid">
-                            <div className="row">
-                                <div className="col-lg-8">
-                                    <div className="tablecard h-100">
-                                        <div className="tableheader d-flex align-items-center justify-content-between boderbtn">
-                                            <h2 className="mb-0">Restaurant Detail</h2>
-                                        </div>
-                                        <div className="contentdivbox">
-                                            <div className="row align-items-center">
-                                                <div className="col-lg-5 mb-3">
-                                                    <div className="form-group">
-                                                        <h6>Restaurant Name</h6>
-                                                        <input type="text" className="form-control" value={input?.restaurantName} disabled />
-                                                    </div>
-                                                </div>
-                                                <div className="col-lg-7 mt-2">
-                                                    <div className="d-flex gap-2 resturant-radio-btn">
-                                                        {Object.entries(labels).map(([key, label]) => (
-                                                            <div
-                                                                key={key}
-                                                                className="d-flex gap-2 align-items-center"
-                                                            >
-                                                                <label>{label}</label>
-                                                                <input
-                                                                    className="form-check-input"
-                                                                    type="radio"
-                                                                    name="restaurantOptions"
-                                                                    value={key}
-                                                                    checked={selectedRestaurantOption === key}
-                                                                    onChange={(e) =>
-                                                                        setSelectedRestaurantOption(e.target.value)
-                                                                    }
-                                                                />
-                                                            </div>
-                                                        ))}
-                                                    </div>
-                                                </div>
-                                                <div className="col-lg-12 mb-3">
-                                                    {renderInputField(selectedRestaurantOption, "name")}
-                                                </div>
-                                            </div>
-                                            <div className="row align-items-center">
-                                                <div className="col-lg-5 mb-3">
-                                                    <div className="form-group">
-                                                        <div className="col-lg-12 col-md-6 col-12 mb-3">
-                                                            <label htmlFor="">Address </label>
+                                        <th>Restaurant Address</th>
 
-                                                            <input type='text' value={input?.restaurantAddress} className="form-control" disabled />
+                                        <th>Receipt Number</th>
+                                        <th>Total Price</th>
+                                        <th>Date</th>
+                                        <th>Time</th>
+                                        <th>Menu Items</th>
 
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                                <div className="col-lg-7 mt-2">
-                                                    <div className="d-flex gap-2 resturant-radio-btn">
-                                                        {Object.entries(labels).map(([key, label]) => (
-                                                            <div
-                                                                key={key}
-                                                                className="d-flex gap-2 align-items-center"
-                                                            >
-                                                                <label>{label}</label>
-                                                                <input
-                                                                    className="form-check-input"
-                                                                    type="radio"
-                                                                    name="addressOptions"
-                                                                    value={key}
-                                                                    checked={selectedAddressOption === key}
-                                                                    onChange={(e) =>
-                                                                        setSelectedAddressOption(e.target.value)
-                                                                    }
-                                                                />
-                                                            </div>
-                                                        ))}
-                                                    </div>
-                                                </div>
-                                                {/* Dynamic Input */}
-                                                <div className="col-lg-12 mb-3">
-                                                    {renderInputField(selectedAddressOption, "address")}
-                                                </div>
-                                                <div className="col-lg-5 mb-3">
-                                                    <div className="form-group">
-                                                        <div className="col-lg-12 col-md-6 col-12 mb-3">
-                                                            <label htmlFor="">Receipt Number </label>
+                                        <th className="text-end">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {logoList !== undefined && logoList?.length > 0
+                                        ? logoList?.map((item, i) => (
+                                            <tr key={i}>
+                                                <td>{i + 1}</td>
+                                                <td>{item?.restaurantName}</td>
+                                                <td>{item?.restaurantAddress}</td>
+                                                <td>{item?.receiptNumber}</td>
+                                                <td>{item?.total_price}</td>
+                                                <td>{item?.date}</td>
+                                                <td>{item?.time}</td>
+                                                <td>{item?.menuItems?.map((it) => it?.menu).join(", ")}</td>
 
-                                                            <input type='text' value={input?.receiptNumber} className="form-control" disabled />
-
-                                                        </div>
+                                                <td className="text-start">
+                                                    <div className="actionbtn d-flex align-items-center justify-content-center">
+                                                        <Link
+                                                            to="#"
+                                                            className="trashlink"
+                                                            onClick={() => {
+                                                                setDelOpen(true);
+                                                                setObject(item?._id);
+                                                            }}
+                                                        >
+                                                            <DeleteSvg />
+                                                        </Link>
                                                     </div>
-                                                </div>
-                                                <div className="col-lg-7 mt-2">
-                                                    <div className="d-flex gap-2 resturant-radio-btn">
-                                                        {Object.entries(labels).map(([key, label]) => (
-                                                            <div
-                                                                key={key}
-                                                                className="d-flex gap-2 align-items-center"
-                                                            >
-                                                                <label>{label}</label>
-                                                                <input
-                                                                    className="form-check-input"
-                                                                    type="radio"
-                                                                    name="receiptNumber"
-                                                                    value={key}
-                                                                    checked={selectedReceiptNumberOption === key}
-                                                                    onChange={(e) =>
-                                                                        setSelecteReceiptNumberOption(e.target.value)
-                                                                    }
-                                                                />
-                                                            </div>
-                                                        ))}
+                                                </td>
+                                            </tr>
+                                        ))
+                                        : !loder && (
+                                            <tr>
+                                                <td colSpan="5">
+                                                    <div className="no_record_text">
+                                                        No Record Found
                                                     </div>
-                                                </div>
-                                                {/* Dynamic Input */}
-                                                <div className="col-lg-12 mb-3">
-                                                    {renderInputField(selectedReceiptNumberOption, "receiptNumber")}
-                                                </div>
-                                                <div className="col-lg-5 mb-3">
-                                                    <div className="form-group">
-                                                        <div className="col-lg-12 col-md-6 col-12 mb-3">
-                                                            <label htmlFor="">Total Price </label>
-
-                                                            <input type='text' value={input?.total_price} className="form-control" disabled />
-
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                                <div className="col-lg-7 mt-2">
-                                                    <div className="d-flex gap-2 resturant-radio-btn">
-                                                        {Object.entries(labels).map(([key, label]) => (
-                                                            <div
-                                                                key={key}
-                                                                className="d-flex gap-2 align-items-center"
-                                                            >
-                                                                <label>{label}</label>
-                                                                <input
-                                                                    className="form-check-input"
-                                                                    type="radio"
-                                                                    name="total_price"
-                                                                    value={key}
-                                                                    checked={selectedTotalPriceOption === key}
-                                                                    onChange={(e) =>
-                                                                        setSelecteTotalPriceOption(e.target.value)
-                                                                    }
-                                                                />
-                                                            </div>
-                                                        ))}
-                                                    </div>
-                                                </div>
-                                                <div className="col-lg-12 mb-3">
-                                                    {renderInputField(selectedTotalPriceOption, "total_price")}
-                                                </div>
-                                                <div className="col-lg-5 mb-3">
-                                                    <div className="form-group">
-                                                        <div className="col-lg-12 col-md-6 col-12 mb-3">
-                                                            <label htmlFor="">Date</label>
-
-                                                            <input type='text' value={input?.date} className="form-control" disabled />
-
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                                <div className="col-lg-7 mt-2">
-                                                    <div className="d-flex gap-2 resturant-radio-btn">
-                                                        {Object.entries(labels).map(([key, label]) => (
-                                                            <div
-                                                                key={key}
-                                                                className="d-flex gap-2 align-items-center"
-                                                            >
-                                                                <label>{label}</label>
-                                                                <input
-                                                                    className="form-check-input"
-                                                                    type="radio"
-                                                                    name="date"
-                                                                    value={key}
-                                                                    checked={selectedDateOption === key}
-                                                                    onChange={(e) =>
-                                                                        setSelecteDateOption(e.target.value)
-                                                                    }
-                                                                />
-                                                            </div>
-                                                        ))}
-                                                    </div>
-                                                </div>
-                                                <div className="col-lg-12 mb-3">
-                                                    {renderInputField(selectedDateOption, "date")}
-                                                </div>
-                                                <div className="col-lg-5 mb-3">
-                                                    <div className="form-group">
-                                                        <div className="col-lg-12 col-md-6 col-12 mb-3">
-                                                            <label htmlFor="">Time</label>
-
-                                                            <input type='text' value={input?.time} className="form-control" disabled />
-
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                                <div className="col-lg-7 mt-2">
-                                                    <div className="d-flex gap-2 resturant-radio-btn">
-                                                        {Object.entries(labels).map(([key, label]) => (
-                                                            <div
-                                                                key={key}
-                                                                className="d-flex gap-2 align-items-center"
-                                                            >
-                                                                <label>{label}</label>
-                                                                <input
-                                                                    className="form-check-input"
-                                                                    type="radio"
-                                                                    name="time"
-                                                                    value={key}
-                                                                    checked={selectedTimeOption === key}
-                                                                    onChange={(e) =>
-                                                                        setSelecteTimeOption(e.target.value)
-                                                                    }
-                                                                />
-                                                            </div>
-                                                        ))}
-                                                    </div>
-                                                </div>
-                                                <div className="col-lg-12 mb-3">
-                                                    {renderInputField(selectedTimeOption, "time")}
-                                                </div>
-                                                <div className="col-lg-5 mb-3">
-                                                    <div className="form-group">
-                                                        <div className="col-lg-12 col-md-6 col-12 mb-3">
-                                                            <label htmlFor="">Menu Items</label>
-
-                                                            <input type='text' value={input?.menuItems} className="form-control" disabled />
-
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                                <div className="col-lg-7 mt-2">
-                                                    <div className="d-flex gap-2 resturant-radio-btn">
-                                                        {Object.entries(menuLabels).map(([key, label]) => (
-                                                            <div
-                                                                key={key}
-                                                                className="d-flex gap-2 align-items-center"
-                                                            >
-                                                                <label>{label}</label>
-                                                                <input
-                                                                    className="form-check-input"
-                                                                    type="radio"
-                                                                    name="menuItems"
-                                                                    value={key}
-                                                                    checked={selectedMenuItemsOption === key}
-                                                                    onChange={(e) =>
-                                                                        setSelecteMenuItemsOption(e.target.value)
-                                                                    }
-                                                                />
-                                                            </div>
-                                                        ))}
-                                                    </div>
-                                                </div>
-                                                <div className="col-lg-12 mb-3">
-                                                    {renderInputField(selectedMenuItemsOption, "menuItems")}
-                                                </div>
-                                                <div className="btndiv d-flex align-items-center gap-3 justify-content-start mt-30 ps-3" >
-                                                    <Link to="#" className="btndarkblue" onClick={ParseName}>
-                                                        Review
-                                                    </Link>
-                                                    <Link to="#" className="btndarkblue" onClick={handleResCreate}>
-                                                        Submit
-                                                    </Link>
-                                                </div>
-                                            </div>
-
-                                        </div>
-                                    </div>
-                                </div>
-                                {/* Right Card */}
-                                <div className="col-lg-4">
-                                    <div className="tablecard mb-30 h-100">
-                                        <div className="tableheader boderbtn">
-                                            <h2 className="mb-0">Receipt data</h2>
-                                        </div>
-                                        <div className="contentdivbox">
-                                            {value?.parsedData && (
-                                                <div className="split_text">
-                                                    {value.parsedData.split("\n").map((line, index) => (
-                                                        <p key={index}>{line}</p>
-                                                    ))}
-                                                </div>
-                                            )}
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
+                                                </td>
+                                            </tr>
+                                        )}
+                                </tbody>
+                            </table>
                         </div>
                     </div>
                 </div>
             </div>
+            <AddReceiptConfig
+                open={open}
+                handleclose={handleclose}
+                LogoListAPI={LogoListAPI}
+            />
+            <HandleDelete
+                isOpen={delOpen}
+                handleClose={handledelclose}
+                handleDelete={handleDelete}
+                deleteTitle={"Are you sure delete this Logo"}
+                loder={loder}
+            />
         </>
     )
 }
