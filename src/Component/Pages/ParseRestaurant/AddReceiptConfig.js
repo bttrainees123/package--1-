@@ -99,6 +99,7 @@ const AddReceiptConfig = ({ open,
             date: "",
             time: ""
         })
+        setResId("")
         setValue({
             restaurantId: "",
             restaurantName: "",
@@ -151,10 +152,10 @@ const AddReceiptConfig = ({ open,
     };
     const RestaurantListAPI = async () => {
         try {
-            const apiResponse = await callAPI(apiUrls.getRestaurantName, {}, "GET");
+            const apiResponse = await callAPI(apiUrls?.getRestaurantName, {}, "GET");
             if (apiResponse?.data?.status) {
                 if (apiResponse?.data?.data?.length > 0) {
-                    setLogoList(apiResponse.data.data);
+                    setLogoList(apiResponse?.data?.data);
                 } else {
                     setLogoList([]);
                 }
@@ -169,7 +170,6 @@ const AddReceiptConfig = ({ open,
 
     const renderInputField = (selectedOption, type) => {
         if (!selectedOption) return null;
-        // const prefix = type === "name" ? "name" : "address";
         let prefix = ""
         if (type === "name") {
             prefix = "restaurantName"
@@ -224,7 +224,7 @@ const AddReceiptConfig = ({ open,
                             placeholder="Start From"
                             value={value[startField]}
                             onChange={(e) =>
-                                setValue((prev) => ({ ...prev, [startField]: e.target.value }))
+                                setValue((prev) => ({ ...prev, [startField]: e?.target?.value }))
                             }
                         />
                     </div>
@@ -236,7 +236,7 @@ const AddReceiptConfig = ({ open,
                             placeholder="End From"
                             value={value[endField]}
                             onChange={(e) =>
-                                setValue((prev) => ({ ...prev, [endField]: e.target.value }))
+                                setValue((prev) => ({ ...prev, [endField]: e?.target?.value }))
                             }
                         />
                     </div>
@@ -256,7 +256,7 @@ const AddReceiptConfig = ({ open,
                         placeholder={`Enter ${labels[selectedOption]}`}
                         value={value[fieldName]}
                         onChange={(e) =>
-                            setValue((prev) => ({ ...prev, [fieldName]: e.target.value }))
+                            setValue((prev) => ({ ...prev, [fieldName]: e?.target?.value }))
                         }
                     />
                 </div>
@@ -283,7 +283,7 @@ const AddReceiptConfig = ({ open,
         } else {
             try {
                 setLoader(true)
-                const apiResponse = await callAPI(apiUrls.createReciptConfig, {}, "POST", value);
+                const apiResponse = await callAPI(apiUrls?.createReciptConfig, {}, "POST", value);
                 if (apiResponse?.data?.status) {
                     LogoListAPI()
                     handleclose()
@@ -312,86 +312,86 @@ const AddReceiptConfig = ({ open,
 
             if (selectedRestaurantOption) {
                 if (selectedRestaurantOption === "startWith") {
-                    data.restaurantNameStartWith = value.restaurantNameStartWith;
+                    data.restaurantNameStartWith = value?.restaurantNameStartWith;
                 } else if (selectedRestaurantOption === "endWith") {
-                    data.restaurantNameEndWith = value.restaurantNameEndWith;
+                    data.restaurantNameEndWith = value?.restaurantNameEndWith;
                 } else if (selectedRestaurantOption === "between") {
-                    data.restaurantNameStartFrom = value.restaurantNameStartFrom;
+                    data.restaurantNameStartFrom = value?.restaurantNameStartFrom;
                     data.restaurantNameEndFrom = value.restaurantNameEndFrom;
                 } else if (selectedRestaurantOption === "chef") {
-                    data.restaurantNameLineNumber = value.restaurantNameLineNumber;
+                    data.restaurantNameLineNumber = value?.restaurantNameLineNumber;
                 }
             }
             if (selectedAddressOption) {
                 if (selectedAddressOption === "startWith") {
-                    data.restaurantAddressStartWith = value.restaurantAddressStartWith;
+                    data.restaurantAddressStartWith = value?.restaurantAddressStartWith;
                 } else if (selectedAddressOption === "endWith") {
-                    data.restaurantAddressEndWith = value.restaurantAddressEndWith;
+                    data.restaurantAddressEndWith = value?.restaurantAddressEndWith;
                 } else if (selectedAddressOption === "between") {
-                    data.restaurantAddressStartFrom = value.restaurantAddressStartFrom;
-                    data.restaurantAddressEndFrom = value.restaurantAddressEndFrom;
+                    data.restaurantAddressStartFrom = value?.restaurantAddressStartFrom;
+                    data.restaurantAddressEndFrom = value?.restaurantAddressEndFrom;
                 } else if (selectedAddressOption === "chef") {
-                    data.restaurantAddressLineNumber = value.restaurantAddressLineNumber;
+                    data.restaurantAddressLineNumber = value?.restaurantAddressLineNumber;
                 }
             }
             if (selectedReceiptNumberOption) {
                 if (selectedReceiptNumberOption === "startWith") {
-                    data.receiptNumberStartWith = value.receiptNumberStartWith;
+                    data.receiptNumberStartWith = value?.receiptNumberStartWith;
                 } else if (selectedReceiptNumberOption === "endWith") {
-                    data.receiptNumberEndWith = value.receiptNumberEndWith;
+                    data.receiptNumberEndWith = value?.receiptNumberEndWith;
                 } else if (selectedReceiptNumberOption === "between") {
-                    data.receiptNumberStartFrom = value.receiptNumberStartFrom;
-                    data.receiptNumberEndFrom = value.receiptNumberEndFrom;
+                    data.receiptNumberStartFrom = value?.receiptNumberStartFrom;
+                    data.receiptNumberEndFrom = value?.receiptNumberEndFrom;
                 } else if (selectedReceiptNumberOption === "chef") {
-                    data.receiptNumberLineNumber = value.receiptNumberLineNumber;
+                    data.receiptNumberLineNumber = value?.receiptNumberLineNumber;
                 }
             }
             if (selectedTotalPriceOption) {
                 if (selectedTotalPriceOption === "startWith") {
-                    data.total_priceStartWith = value.total_priceStartWith;
+                    data.total_priceStartWith = value?.total_priceStartWith;
                 } else if (selectedTotalPriceOption === "endWith") {
-                    data.total_priceEndWith = value.total_priceEndWith;
+                    data.total_priceEndWith = value?.total_priceEndWith;
                 } else if (selectedTotalPriceOption === "between") {
-                    data.total_priceStartFrom = value.total_priceStartFrom;
-                    data.total_priceEndFrom = value.total_priceEndFrom;
+                    data.total_priceStartFrom = value?.total_priceStartFrom;
+                    data.total_priceEndFrom = value?.total_priceEndFrom;
                 } else if (selectedTotalPriceOption === "chef") {
-                    data.total_priceLineNumber = value.total_priceLineNumber;
+                    data.total_priceLineNumber = value?.total_priceLineNumber;
                 }
             }
             if (selectedDateOption) {
                 if (selectedDateOption === "startWith") {
-                    data.dateStartWith = value.dateStartWith;
+                    data.dateStartWith = value?.dateStartWith;
                 } else if (selectedDateOption === "endWith") {
-                    data.dateEndWith = value.dateEndWith;
+                    data.dateEndWith = value?.dateEndWith;
                 } else if (selectedDateOption === "between") {
-                    data.dateStartFrom = value.dateStartFrom;
-                    data.dateEndFrom = value.dateEndFrom;
+                    data.dateStartFrom = value?.dateStartFrom;
+                    data.dateEndFrom = value?.dateEndFrom;
                 } else if (selectedDateOption === "chef") {
-                    data.dateLineNumber = value.dateLineNumber;
+                    data.dateLineNumber = value?.dateLineNumber;
                 }
             }
             if (selectedTimeOption) {
                 if (selectedTimeOption === "startWith") {
-                    data.timeStartWith = value.timeStartWith;
+                    data.timeStartWith = value?.timeStartWith;
                 } else if (selectedTimeOption === "endWith") {
-                    data.timeEndWith = value.timeEndWith;
+                    data.timeEndWith = value?.timeEndWith;
                 } else if (selectedTimeOption === "between") {
-                    data.timeStartFrom = value.timeStartFrom;
-                    data.timeEndFrom = value.timeEndFrom;
+                    data.timeStartFrom = value?.timeStartFrom;
+                    data.timeEndFrom = value?.timeEndFrom;
                 } else if (selectedTimeOption === "chef") {
-                    data.timeLineNumber = value.timeLineNumber;
+                    data.timeLineNumber = value?.timeLineNumber;
                 }
             }
             if (selectedMenuItemsOption) {
                 if (selectedMenuItemsOption === "startWith") {
-                    data.menuItemsStartWith = value.menuItemsStartWith;
+                    data.menuItemsStartWith = value?.menuItemsStartWith;
                 } else if (selectedMenuItemsOption === "endWith") {
-                    data.menuItemsEndWith = value.menuItemsEndWith;
+                    data.menuItemsEndWith = value?.menuItemsEndWith;
                 } else if (selectedMenuItemsOption === "between") {
-                    data.menuItemsStartFrom = value.menuItemsStartFrom;
-                    data.menuItemsEndFrom = value.menuItemsEndFrom;
+                    data.menuItemsStartFrom = value?.menuItemsStartFrom;
+                    data.menuItemsEndFrom = value?.menuItemsEndFrom;
                 } else if (selectedMenuItemsOption === "chef") {
-                    data.menuItemsLineNumber = value.menuItemsLineNumber;
+                    data.menuItemsLineNumber = value?.menuItemsLineNumber;
                 }
             }
 
@@ -517,7 +517,9 @@ const AddReceiptConfig = ({ open,
                                 <button style={{ fontSize: '15px' }}
                                     type="button"
                                     className="btn-close position-absolute top-50 end-0"
-                                    onClick={(e) => handleclose(e)}
+                                    onClick={(e) => {handleclose(e)
+                                        handleClear()
+                                    }}
                                 />
                                 <p>Please enter Restaurant details</p>
 
@@ -543,7 +545,7 @@ const AddReceiptConfig = ({ open,
 
                                                 <option value="">Select Restaurant</option>
                                                 {logoList?.map((val, i) => (
-                                                    <option value={val._id} key={i}>{val.name}</option>
+                                                    <option value={val?._id} key={i}>{val?.name}</option>
                                                 ))}
                                             </select>
                                         </div>
@@ -618,7 +620,7 @@ const AddReceiptConfig = ({ open,
                                                                     value={key}
                                                                     checked={selectedRestaurantOption === key}
                                                                     onChange={(e) =>
-                                                                        setSelectedRestaurantOption(e.target.value)
+                                                                        setSelectedRestaurantOption(e?.target?.value)
                                                                     }
                                                                 />
                                                             </div>
@@ -661,7 +663,7 @@ const AddReceiptConfig = ({ open,
                                                                     value={key}
                                                                     checked={selectedAddressOption === key}
                                                                     onChange={(e) =>
-                                                                        setSelectedAddressOption(e.target.value)
+                                                                        setSelectedAddressOption(e?.target?.value)
                                                                     }
                                                                 />
                                                             </div>
@@ -703,7 +705,7 @@ const AddReceiptConfig = ({ open,
                                                                     value={key}
                                                                     checked={selectedReceiptNumberOption === key}
                                                                     onChange={(e) =>
-                                                                        setSelecteReceiptNumberOption(e.target.value)
+                                                                        setSelecteReceiptNumberOption(e?.target?.value)
                                                                     }
                                                                 />
                                                             </div>
@@ -745,7 +747,7 @@ const AddReceiptConfig = ({ open,
                                                                     value={key}
                                                                     checked={selectedTotalPriceOption === key}
                                                                     onChange={(e) =>
-                                                                        setSelecteTotalPriceOption(e.target.value)
+                                                                        setSelecteTotalPriceOption(e?.target?.value)
                                                                     }
                                                                 />
                                                             </div>
@@ -786,7 +788,7 @@ const AddReceiptConfig = ({ open,
                                                                     value={key}
                                                                     checked={selectedDateOption === key}
                                                                     onChange={(e) =>
-                                                                        setSelecteDateOption(e.target.value)
+                                                                        setSelecteDateOption(e?.target?.value)
                                                                     }
                                                                 />
                                                             </div>
@@ -827,7 +829,7 @@ const AddReceiptConfig = ({ open,
                                                                     value={key}
                                                                     checked={selectedTimeOption === key}
                                                                     onChange={(e) =>
-                                                                        setSelecteTimeOption(e.target.value)
+                                                                        setSelecteTimeOption(e?.target?.value)
                                                                     }
                                                                 />
                                                             </div>
@@ -868,7 +870,7 @@ const AddReceiptConfig = ({ open,
                                                                     value={key}
                                                                     checked={selectedMenuItemsOption === key}
                                                                     onChange={(e) =>
-                                                                        setSelecteMenuItemsOption(e.target.value)
+                                                                        setSelecteMenuItemsOption(e?.target?.value)
                                                                     }
                                                                 />
                                                             </div>
@@ -900,7 +902,7 @@ const AddReceiptConfig = ({ open,
                                         <div className="contentdivbox">
                                             {value?.parsedData && (
                                                 <div className="split_text">
-                                                    {value.parsedData.split("\n").map((line, index) => (
+                                                    {value?.parsedData.split("\n").map((line, index) => (
                                                         <p key={index}>{line}</p>
                                                     ))}
                                                 </div>

@@ -131,7 +131,7 @@ const Index = () => {
 
                                     <option value="">Select Restaurant</option>
                                     {resList?.map((val, i) => (
-                                        <option value={val._id} key={i}>{val.name}</option>
+                                        <option value={val?._id} key={i}>{val?.name}</option>
                                     ))}
                                 </select>
                             </div>
