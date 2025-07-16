@@ -16,6 +16,7 @@ const AddReceiptConfig = ({ open,
     const [, forceUpdate] = useState();
 
 
+
     const [value, setValue] = useState({
         restaurantId: "",
         restaurantName: "",
@@ -60,7 +61,7 @@ const AddReceiptConfig = ({ open,
         timeStartFrom: "",
         timeEndFrom: "",
         timeLineNumber: [],
-
+        identifier: ''
     });
 
     const [selectedRestaurantOption, setSelectedRestaurantOption] = useState("");
@@ -70,6 +71,7 @@ const AddReceiptConfig = ({ open,
     const [selectedMenuItemsOption, setSelecteMenuItemsOption] = useState("");
     const [selectedDateOption, setSelecteDateOption] = useState("");
     const [selectedTimeOption, setSelecteTimeOption] = useState("");
+    const [menuIt, setMenuIt] = useState([])
     const [input, seInput] = useState({
         restaurantAddress: "",
         restaurantName: "",
@@ -119,7 +121,7 @@ const AddReceiptConfig = ({ open,
             receiptNumberEndWith: "",
             receiptNumberStartFrom: "",
             receiptNumberEndFrom: "",
-            receiptNumberLineNumber: "",
+            receiptNumberLineNumber: [],
             total_price: "",
             total_priceStartWith: "",
             total_priceEndWith: "",
@@ -144,6 +146,7 @@ const AddReceiptConfig = ({ open,
             timeStartFrom: "",
             timeEndFrom: "",
             timeLineNumber: [],
+            identifier: ''
         })
 
     }
@@ -274,16 +277,26 @@ const AddReceiptConfig = ({ open,
     const menuLabels = {
         between: "Between",
     }
-
+    function trimObjectValues(obj) {
+        for (const key in obj) {
+            if (typeof obj[key] === 'string') {
+                obj[key] = obj[key].trim();
+            } else if (typeof obj[key] === 'object' && obj[key] !== null) {
+                trimObjectValues(obj[key]);
+            }
+        }
+        return obj;
+    }
     const handleResCreate = async () => {
         const formValid = simpleValidator.current.allValid();
         if (!formValid) {
             simpleValidator.current.showMessages();
             forceUpdate(1);
         } else {
+
             try {
                 setLoader(true)
-                const apiResponse = await callAPI(apiUrls?.createReciptConfig, {}, "POST", value);
+                const apiResponse = await callAPI(apiUrls?.createReciptConfig, {}, "POST", trimObjectValues(value));
                 if (apiResponse?.data?.status) {
                     LogoListAPI()
                     handleclose()
@@ -308,6 +321,7 @@ const AddReceiptConfig = ({ open,
             let data = {
                 parsedData: value?.parsedData,
                 restaurantId: resId,
+                identifier: value?.identifier
             };
 
             if (selectedRestaurantOption) {
@@ -402,18 +416,18 @@ const AddReceiptConfig = ({ open,
                 data
             );
             if (apiResponse?.data?.status) {
-                seInput((val) => {
-                    return {
-                        ...val, restaurantAddress: apiResponse?.data?.data.restaurantAddress,
-                        restaurantName: apiResponse?.data?.data?.restaurantName,
-                        receiptNumber: apiResponse?.data?.data?.receiptNumber,
-                        total_price: apiResponse?.data?.data?.total_price,
-                        date: apiResponse?.data?.data?.date,
-                        menuItems: JSON.stringify(apiResponse?.data?.data.menuItems),
-                        time: apiResponse?.data?.data?.time,
+                seInput((val) => ({
+                    ...val, restaurantAddress: apiResponse?.data?.data.restaurantAddress,
+                    restaurantName: apiResponse?.data?.data?.restaurantName,
+                    receiptNumber: apiResponse?.data?.data?.receiptNumber,
+                    total_price: apiResponse?.data?.data?.total_price,
+                    date: apiResponse?.data?.data?.date,
+                    menuItems: JSON.stringify(apiResponse?.data?.data?.menuItems),
+                    time: apiResponse?.data?.data?.time,
 
-                    };
-                });
+                }));
+                setMenuIt(apiResponse?.data?.data?.menuItems)
+                console.log("menu ", menuIt)
                 setValue((prev) => ({
                     ...prev, restaurantAddress: apiResponse?.data?.data?.restaurantAddress,
                     restaurantName: apiResponse?.data?.data?.restaurantName,
@@ -517,8 +531,11 @@ const AddReceiptConfig = ({ open,
                                 <button style={{ fontSize: '15px' }}
                                     type="button"
                                     className="btn-close position-absolute top-50 end-0"
-                                    onClick={(e) => {handleclose(e)
+                                    onClick={(e) => {
+                                        handleclose(e)
                                         handleClear()
+                                        simpleValidator.current.purgeFields();
+                                        forceUpdate(1)
                                     }}
                                 />
                                 <p>Please enter Restaurant details</p>
@@ -533,7 +550,12 @@ const AddReceiptConfig = ({ open,
                             <div className="d-flex flexcustom gap-3 flex-wrap">
                                 <div className="resturant-upload-top mb-20" >
                                     <div className="upload-btn-sec d-flex justify-content-end gap-3 align-items-center" >
-
+                                        <div className="col">
+                                            <div className="form-group">
+                                                <h6>Identifier</h6>
+                                                <input type='text' placeholder='identifier...' value={value?.identifier} onChange={(e) => setValue((prev) => ({ ...prev, identifier: e?.target?.value }))} />
+                                            </div></div>
+                                          
                                         <div className="col-lg-12 col-md-12 col-12 mb-3 " style={{ marginTop: "13px", width: '250px', marginLeft: '540px' }}>
                                             <select
                                                 className="form-select"
@@ -841,10 +863,14 @@ const AddReceiptConfig = ({ open,
                                                 </div>
                                                 <div className="col-lg-5 mb-3">
                                                     <div className="form-group">
+                                                        {/* {menuIt?.map((i, it) => { */}
                                                         <div className="col-lg-12 col-md-6 col-12 mb-3">
                                                             <label htmlFor="">Menu Items</label>
+                                                            < input type='text' value={menuIt} className="form-control" disabled />
 
-                                                            <input type='text' value={input?.menuItems} className="form-control" disabled />
+
+
+
                                                             <div className="error">
                                                                 {simpleValidator.current.message(
                                                                     "MenuItems",
@@ -853,8 +879,10 @@ const AddReceiptConfig = ({ open,
                                                                 )}
                                                             </div>
                                                         </div>
+                                                        {/* //  })}  */}
                                                     </div>
                                                 </div>
+
                                                 <div className="col-lg-7 mt-2">
                                                     <div className="d-flex gap-2 resturant-radio-btn">
                                                         {Object.entries(menuLabels).map(([key, label]) => (
@@ -907,8 +935,15 @@ const AddReceiptConfig = ({ open,
                                                     ))}
                                                 </div>
                                             )}
+                                            {value?.menuItems?.map((i, it) => {
+                                                <div className="col-lg-5 mb-3">
+                                                    <li key={i}>{it}</li>
+                                                    {console.log("it", it)}
+                                                </div>
+                                            })}
                                         </div>
                                     </div>
+
                                 </div>
                             </div>
                         </div>
